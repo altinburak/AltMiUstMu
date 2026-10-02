@@ -6,7 +6,7 @@
   },
   "steps": {
     "install": {
-      "commands": ["mkdir -p /root/.nuget/packages"]
+      "commands": ["mkdir -p /root/.nuget/packages /app/obj"]
     },
     "build": {
       "commands": [
