@@ -5,7 +5,15 @@
     Layout = "_AuthLayout";
 }
 <h1 class="h1 text-center">Şifreni mi unuttun?</h1>
-@if (Model.Sent)
+@if (!Model.EmailEnabled)
+{
+    <div class="alert-info mt-6" role="status">
+        Şu an e-posta gönderimi kapalı. Şifreni sıfırlamak için oyunun yöneticisine yaz; sana geçici bir şifre verecek.
+        Giriş yaptıktan sonra <strong>Hesap ayarları</strong> sayfasından kendi şifreni belirleyebilirsin.
+    </div>
+    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">Giriş sayfasına dön</a>
+}
+else if (Model.Sent)
 {
     <div class="alert-success mt-6" role="status">Bu adrese kayıtlı bir hesap varsa şifre sıfırlama bağlantısı gönderdik. Bağlantı 24 saat geçerli.</div>
     <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">Giriş sayfasına dön</a>

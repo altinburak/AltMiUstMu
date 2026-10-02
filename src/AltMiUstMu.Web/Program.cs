@@ -66,6 +66,8 @@ builder.Services.Configure<WebEncoderOptions>(o => o.TextEncoderSettings = new T
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<GameQueries>();
 builder.Services.AddScoped<AccountEmails>();
+var accountSettings = new AccountSettings(builder.Configuration.GetValue("REQUIRE_EMAIL_CONFIRMATION", false));
+builder.Services.AddSingleton(accountSettings);
 
 builder.Services.AddDataProtection()
     .SetApplicationName("altmiustmu")
@@ -73,8 +75,8 @@ builder.Services.AddDataProtection()
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(o =>
     {
-        o.SignIn.RequireConfirmedEmail = true;
-        o.SignIn.RequireConfirmedAccount = true;
+        o.SignIn.RequireConfirmedEmail = accountSettings.RequireEmailConfirmation;
+        o.SignIn.RequireConfirmedAccount = accountSettings.RequireEmailConfirmation;
         o.User.RequireUniqueEmail = true;
         o.Password.RequiredLength = 8;
         o.Password.RequireDigit = true;

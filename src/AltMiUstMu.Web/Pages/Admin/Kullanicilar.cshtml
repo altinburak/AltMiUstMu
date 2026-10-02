@@ -53,8 +53,15 @@
                                     <span class="chip bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Aktif</span>
                                 }
                             </td>
-                            <td class="text-right">
-                                <form method="post" asp-page-handler="Toggle" asp-route-q="@Model.Query" asp-route-p="@Model.PageNumber">
+                            <td class="text-right whitespace-nowrap">
+                                <form method="post" asp-page-handler="ResetPassword" asp-route-q="@Model.Query" asp-route-p="@Model.PageNumber" class="inline">
+                                    <input type="hidden" name="userId" value="@u.Id" />
+                                    <button type="submit" class="btn btn-ghost btn-sm"
+                                            onclick="return confirm('@u.DisplayName için yeni bir geçici şifre oluşturulsun mu? Eski şifresi çalışmaz.')">
+                                        Şifre sıfırla
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="Toggle" asp-route-q="@Model.Query" asp-route-p="@Model.PageNumber" class="inline">
                                     <input type="hidden" name="userId" value="@u.Id" />
                                     <input type="hidden" name="disable" value="@(u.IsDisabled ? "false" : "true")" />
                                     <button type="submit" class="btn btn-sm @(u.IsDisabled ? "btn-secondary" : "btn-ghost text-red-600 dark:text-red-400")"

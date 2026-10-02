@@ -108,7 +108,7 @@ DECISIONS.md                  Verilen tüm kararlar ve varsayımlar
    ```
    → http://localhost:5080
 
-   Kayıt olduğunda doğrulama e-postası gönderilmez; bağlantı konsola yazılır ("RESEND_API_KEY not set" satırına bak).
+   Varsayılan olarak e-posta doğrulaması kapalı: kayıt olan kullanıcı hemen giriş yapmış olur (bkz. `REQUIRE_EMAIL_CONFIRMATION`).
 
 **CSS'i canlı izlemek için:** `./scripts/tailwind-watch.sh` (Windows'ta `./scripts/tailwind-watch.ps1`).
 
@@ -141,7 +141,8 @@ Tamamı `.env.example` dosyasında açıklamalarıyla birlikte duruyor.
 |---|---|---|
 | `DATABASE_URL` | ✅ | `postgres://kullanıcı:şifre@host:port/db` ya da Npgsql bağlantı cümlesi. Railway otomatik verir |
 | `APP_URL` | ✅ (prod) | Herkese açık adres, örn. `https://altmiustmu.up.railway.app`. E-posta linkleri ve OG etiketleri için |
-| `RESEND_API_KEY` | ➖ | Resend API anahtarı. Boşsa e-posta gönderilmez, linkler loglanır |
+| `REQUIRE_EMAIL_CONFIRMATION` | ➖ | Varsayılan `false`: e-posta doğrulaması ve e-postayla şifre sıfırlama kapalı, kayıt olan hemen giriş yapar. Şifresini unutanlara admin `/admin/kullanicilar` sayfasından geçici şifre verir. `true` yapacaksan Resend ayarları da gerekir |
+| `RESEND_API_KEY` | ➖ | Resend API anahtarı (sadece doğrulama açıkken). Boşsa e-posta gönderilmez, linkler loglanır |
 | `EMAIL_FROM` | ➖ | Gönderen, örn. `Alt mı Üst mü? <bildirim@alanadin.com>` (alan adı Resend'de doğrulanmış olmalı) |
 | `CRON_SECRET` | ➖ | `/api/cron/sync` için gizli anahtar. Boşsa uç nokta kapalıdır |
 | `ADMIN_EMAIL` | ✅ (seed) | `seed` komutunun oluşturacağı admin |
@@ -249,11 +250,15 @@ Senkronizasyonu istersen dışarıdan da tetikleyebilirsin:
 curl -X POST https://<alan-adın>/api/cron/sync -H "X-Cron-Secret: <CRON_SECRET>"
 ```
 
-### 7. E-posta (Resend)
+### 7. E-posta (isteğe bağlı, varsayılan olarak kapalı)
+
+Varsayılan ayarda uygulama hiç e-posta göndermez. Kayıt olan kullanıcı hemen giriş yapar. Şifresini unutan kullanıcıya admin, **Yönetim → Kullanıcılar → Şifre sıfırla** ile geçici bir şifre verir. Bu adımı atlayabilirsin.
+
+İleride e-posta doğrulamasını açmak istersen:
 
 1. [resend.com](https://resend.com) → **Domains**: alan adını ekle, verilen DNS kayıtlarını gir ve doğrulanmasını bekle.
 2. **API Keys** → yeni anahtar oluştur ve `RESEND_API_KEY` değişkenine yaz. `EMAIL_FROM`'u doğruladığın alan adından bir adresle ayarla.
-3. **web** servisini yeniden deploy et. Kayıt ve şifre sıfırlama e-postaları artık gerçekten gönderilir.
+3. **web** servisine `REQUIRE_EMAIL_CONFIRMATION=true` ekle ve yeniden deploy et. Kayıt ve şifre sıfırlama e-postaları artık gerçekten gönderilir.
 
 ### 8. Sezonu hazırla
 

@@ -11,8 +11,10 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace AltMiUstMu.Web.Pages.Hesap;
 
 [EnableRateLimiting("auth")]
-public class SifremiUnuttumModel(UserManager<AppUser> users, AccountEmails emails, ILogger<SifremiUnuttumModel> logger) : PageModel
+public class SifremiUnuttumModel(UserManager<AppUser> users, AccountEmails emails, AccountSettings settings, ILogger<SifremiUnuttumModel> logger) : PageModel
 {
+    public bool EmailEnabled => settings.RequireEmailConfirmation;
+
     [BindProperty]
     [Required(ErrorMessage = "E-posta zorunlu.")]
     [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi gir.")]
@@ -23,7 +25,7 @@ public class SifremiUnuttumModel(UserManager<AppUser> users, AccountEmails email
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid)
+        if (!EmailEnabled || !ModelState.IsValid)
         {
             return Page();
         }

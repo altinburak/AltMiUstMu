@@ -158,6 +158,43 @@ public class AdminService(
         await SaveAndRefreshAsync(seasonId, ct);
     }
 
+    /// <summary>
+    /// Sets a random temporary password (used while email is off, so "forgot password" goes through the admin).
+    /// Returns the new password, or an error message.
+    /// </summary>
+    public async Task<(string? Password, string? Error)> ResetPasswordAsync(AuditActor actor, string userId, CancellationToken ct = default)
+    {
+        var user = await users.FindByIdAsync(userId);
+        if (user is null || user.IsPundit)
+        {
+            return (null, "Kullanıcı bulunamadı.");
+        }
+
+        // Lowercase letters + digits only: easy to dictate, satisfies the password policy.
+        const string alphabet = "abcdefghjkmnpqrstuvwxyz";
+        const string digits = "23456789";
+        var chars = new char[10];
+        for (var i = 0; i < chars.Length; i++)
+        {
+            var set = i % 3 == 2 ? digits : alphabet;
+            chars[i] = set[System.Security.Cryptography.RandomNumberGenerator.GetInt32(set.Length)];
+        }
+
+        var password = new string(chars);
+        var token = await users.GeneratePasswordResetTokenAsync(user);
+        var result = await users.ResetPasswordAsync(user, token, password);
+        if (!result.Succeeded)
+        {
+            return (null, string.Join(" ", result.Errors.Select(e => e.Description)));
+        }
+
+        await users.SetLockoutEndDateAsync(user, null);
+        await users.ResetAccessFailedCountAsync(user);
+        audit.Log(actor, "user", user.DisplayName, null, "geçici şifre verildi");
+        await db.SaveChangesAsync(ct);
+        return (password, null);
+    }
+
     public async Task<string?> SetDisabledAsync(AuditActor actor, string userId, bool disabled, CancellationToken ct = default)
     {
         if (userId == actor.UserId)

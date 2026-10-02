@@ -14,7 +14,14 @@ using Microsoft.EntityFrameworkCore;
 namespace AltMiUstMu.Web.Pages.Hesap;
 
 [EnableRateLimiting("auth")]
-public class KayitModel(UserManager<AppUser> users, AppDbContext db, AccountEmails emails, TimeProvider time, ILogger<KayitModel> logger) : PageModel
+public class KayitModel(
+    UserManager<AppUser> users,
+    SignInManager<AppUser> signIn,
+    AppDbContext db,
+    AccountEmails emails,
+    AccountSettings settings,
+    TimeProvider time,
+    ILogger<KayitModel> logger) : PageModel
 {
     [BindProperty]
     public InputModel Input { get; set; } = new();
@@ -105,7 +112,16 @@ public class KayitModel(UserManager<AppUser> users, AppDbContext db, AccountEmai
         }
 
         logger.LogInformation("New user registered: {DisplayName}", displayName);
-        await SendConfirmationAsync(users, emails, user, logger, Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : null);
+        var returnUrl = Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : null;
+
+        if (!settings.RequireEmailConfirmation)
+        {
+            await signIn.SignInAsync(user, isPersistent: true);
+            TempData["Toast"] = $"Hoş geldin {displayName}! Şimdi 30 takım için tahminlerini yap.";
+            return LocalRedirect(returnUrl ?? "/tahminler");
+        }
+
+        await SendConfirmationAsync(users, emails, user, logger, returnUrl);
         return RedirectToPage("/Hesap/KayitTamam", new { email });
     }
 

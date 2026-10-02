@@ -53,6 +53,21 @@ public class KullanicilarModel(AppDbContext db, SeasonService seasons, AdminServ
             .ToListAsync(ct);
     }
 
+    public async Task<IActionResult> OnPostResetPasswordAsync(string userId, CancellationToken ct)
+    {
+        var (password, error) = await admin.ResetPasswordAsync(Actor, userId, ct);
+        if (password is null)
+        {
+            FlashError(error ?? "Şifre sıfırlanamadı.");
+        }
+        else
+        {
+            Flash($"Geçici şifre: {password}  (kullanıcıya ilet; giriş yaptıktan sonra Hesap ayarları'ndan değiştirebilir)");
+        }
+
+        return RedirectToPage(new { q = Query, p = PageNumber });
+    }
+
     public async Task<IActionResult> OnPostToggleAsync(string userId, bool disable, CancellationToken ct)
     {
         var error = await admin.SetDisabledAsync(Actor, userId, disable, ct);
