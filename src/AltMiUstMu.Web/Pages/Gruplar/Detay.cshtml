@@ -1,0 +1,61 @@
+@page "/gruplar/{slug}"
+@model AltMiUstMu.Web.Pages.Gruplar.DetayModel
+@{
+    ViewData["Title"] = $"{Model.Group.Name} – grup sıralaması";
+    ViewData["Description"] = $"{Model.Group.Name} grubunun Alt mı Üst mü? NBA sezon tahmin sıralaması. {Model.Group.Members.Count} üye.";
+}
+<div class="container-app py-6 sm:py-8">
+    <a href="/gruplar" class="text-sm font-semibold muted hover:text-brand-500">← Gruplar</a>
+    <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="eyebrow">@Model.Season.Label · @Model.Group.Members.Count üye</p>
+            <h1 class="h1 mt-1">@Model.Group.Name</h1>
+        </div>
+        <label class="flex cursor-pointer items-center gap-3 self-start rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold sm:self-auto dark:border-ink-700 dark:bg-ink-900">
+            <input type="checkbox" name="mutfak" value="true" class="size-5 rounded accent-brand-500" checked="@Model.IncludePundits"
+                   hx-get="@Model.BoardUrl" hx-target="#group-board" hx-trigger="change" hx-include="this" />
+            🎙️ Kaan ve İnan'ı da göster
+        </label>
+    </div>
+
+    @if (Model.IsMember)
+    {
+        <div class="card card-pad mt-6 flex flex-col gap-3 sm:flex-row sm:items-center" x-data="copyText('@Model.InviteUrl')">
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold">Davet bağlantısı</p>
+                <p class="truncate font-mono text-sm muted">@Model.InviteUrl</p>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" class="btn btn-secondary flex-1 sm:flex-none" x-on:click="copy()" aria-label="Davet bağlantısını kopyala">
+                    @Icons.Svg("copy", "size-4") <span x-text="copied ? 'Kopyalandı!' : 'Kopyala'">Kopyala</span>
+                </button>
+                <button type="button" class="btn btn-primary flex-1 sm:flex-none" x-on:click="share('@Model.Group.Name grubuna katıl – Alt mı Üst mü?')">
+                    @Icons.Svg("share", "size-4") Paylaş
+                </button>
+            </div>
+        </div>
+    }
+    else if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="alert-info mt-6">Bu grubun sıralamasını görüyorsun. Katılmak için bir üyeden davet bağlantısı iste.</div>
+    }
+
+    <partial name="_GroupBoard" model="Model" />
+
+    @if (Model.IsMember)
+    {
+        <div class="mt-8 flex flex-wrap gap-3 border-t border-zinc-200 pt-6 dark:border-ink-800">
+            <button type="button" class="btn btn-ghost text-red-600 dark:text-red-400" hx-post="/gruplar/@Model.Group.Slug?handler=Leave"
+                    hx-confirm="@(Model.IsOwner ? "Gruptan ayrılırsan sahiplik en eski üyeye geçer. Emin misin?" : "Gruptan ayrılmak istediğine emin misin?")">
+                Gruptan ayrıl
+            </button>
+            @if (Model.IsOwner)
+            {
+                <button type="button" class="btn btn-ghost text-red-600 dark:text-red-400" hx-post="/gruplar/@Model.Group.Slug?handler=Delete"
+                        hx-confirm="Grup tüm üyeler için silinecek. Emin misin?">
+                    Grubu sil
+                </button>
+            }
+        </div>
+    }
+</div>

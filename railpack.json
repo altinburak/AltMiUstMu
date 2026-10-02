@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "provider": "dotnet",
+  "packages": {
+    "dotnet": "10.0"
+  },
+  "steps": {
+    "install": {
+      "commands": ["mkdir -p /root/.nuget/packages"]
+    },
+    "build": {
+      "commands": [
+        "dotnet publish src/AltMiUstMu.Web/AltMiUstMu.Web.csproj -c Release -o out"
+      ]
+    }
+  },
+  "deploy": {
+    "startCommand": "./out/AltMiUstMu.Web"
+  }
+}

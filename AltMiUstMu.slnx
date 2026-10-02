@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AltMiUstMu.Core/AltMiUstMu.Core.csproj" />
+    <Project Path="src/AltMiUstMu.Infrastructure/AltMiUstMu.Infrastructure.csproj" />
+    <Project Path="src/AltMiUstMu.Web/AltMiUstMu.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AltMiUstMu.Tests/AltMiUstMu.Tests.csproj" />
+  </Folder>
+</Solution>

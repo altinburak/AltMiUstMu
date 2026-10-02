@@ -1,0 +1,77 @@
+@model AltMiUstMu.Web.Pages.Gruplar.DetayModel
+<div id="group-board" class="card mt-6 overflow-hidden">
+    <table class="table-app">
+        <caption class="sr-only">@Model.Group.Name sıralaması</caption>
+        <thead class="bg-zinc-50 dark:bg-ink-850">
+            <tr>
+                <th scope="col" class="w-12 text-center">#</th>
+                <th scope="col">Oyuncu</th>
+                @if (Model.Locked)
+                {
+                    <th scope="col" class="text-right">Proj.</th>
+                    <th scope="col" class="hidden text-right sm:table-cell">Kesin</th>
+                    <th scope="col" class="hidden text-right sm:table-cell">Genel</th>
+                }
+                else
+                {
+                    <th scope="col" class="text-right">Tahmin</th>
+                }
+                @if (Model.IsOwner)
+                {
+                    <th scope="col" class="w-10"><span class="sr-only">İşlem</span></th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                var isMe = row.UserId == Model.MyId;
+                <tr class="@(isMe ? "bg-brand-500/10" : row.IsPundit ? "bg-amber-500/5" : "")">
+                    <td class="text-center font-black tabular-nums @(row.GroupRank == 1 ? "text-brand-500" : "")">@(row.GroupRank?.ToString() ?? "–")</td>
+                    <td>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <a href="/oyuncu/@Uri.EscapeDataString(row.DisplayName)" class="font-semibold hover:underline">@row.DisplayName</a>
+                            @if (row.IsPundit)
+                            {
+                                @Badges.Pundit()
+                            }
+                            @if (row.IsOwner)
+                            {
+                                <span class="chip bg-zinc-500/10 muted">kurucu</span>
+                            }
+                        </div>
+                    </td>
+                    @if (Model.Locked)
+                    {
+                        <td class="text-right text-base font-bold tabular-nums">@(row.Score?.ProjectedCorrect.ToString() ?? "–")</td>
+                        <td class="hidden text-right tabular-nums text-emerald-600 sm:table-cell dark:text-emerald-400">@(row.Score?.ClinchedCorrect.ToString() ?? "–")</td>
+                        <td class="hidden text-right tabular-nums muted sm:table-cell">@(row.Score?.Rank?.ToString() ?? "–")</td>
+                    }
+                    else
+                    {
+                        <td class="text-right tabular-nums">
+                            <span class="@(row.PickCount >= 30 ? "font-bold text-emerald-600 dark:text-emerald-400" : "muted")">@row.PickCount/30</span>
+                        </td>
+                    }
+                    @if (Model.IsOwner)
+                    {
+                        <td class="text-right">
+                            @if (!row.IsOwner && !row.IsPundit)
+                            {
+                                <button type="button" class="btn btn-ghost btn-sm text-red-600 dark:text-red-400" aria-label="@row.DisplayName adlı üyeyi çıkar"
+                                        hx-post="/gruplar/@Model.Group.Slug?handler=Remove&mutfak=@(Model.IncludePundits ? "true" : "false")" hx-vals='{"memberId": "@row.UserId"}'
+                                        hx-target="#group-board" hx-confirm="@row.DisplayName gruptan çıkarılsın mı?">
+                                    @Icons.Svg("x", "size-4")
+                                </button>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (!Model.Locked)
+    {
+        <p class="border-t border-zinc-100 px-4 py-3 text-xs muted dark:border-ink-800">Puanlar sezon başlayınca görünür. Şimdilik kim kaç takım seçti onu görüyorsun.</p>
+    }
+</div>

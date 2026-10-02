@@ -1,0 +1,86 @@
+@page
+@model AltMiUstMu.Web.Pages.Admin.PunditlerModel
+@{
+    ViewData["Title"] = "Mutfak tahminleri";
+}
+<div class="container-app py-6 sm:py-8">
+    <partial name="_AdminNav" />
+
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+        <aside class="space-y-3 lg:w-64 lg:shrink-0">
+            <h1 class="h2">Mutfak oyuncuları</h1>
+            @foreach (var p in Model.Pundits)
+            {
+                var active = p.UserId == Model.Selected?.UserId;
+                <a href="?id=@p.UserId" class="card flex items-center gap-3 px-3 py-2.5 transition @(active ? "border-brand-500! ring-1 ring-brand-500/40" : "hover:border-brand-400")">
+                    <span class="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-amber-400 text-sm font-black text-white">@Display.Initials(p.DisplayName)</span>
+                    <span class="flex-1 font-semibold">@p.DisplayName</span>
+                    <span class="text-xs tabular-nums @(p.Picks.Count == 30 ? "text-emerald-500" : "muted")">@p.Picks.Count/30</span>
+                </a>
+            }
+            <form method="post" asp-page-handler="Create" class="card card-pad space-y-2">
+                <label for="NewName" class="label">Yeni Mutfak oyuncusu</label>
+                <input asp-for="NewName" class="input" maxlength="20" placeholder="Ad Soyad" />
+                <button type="submit" class="btn btn-secondary btn-sm w-full">Ekle</button>
+                <p class="text-xs muted">Mutfak oyuncuları giriş yapamaz; tahminlerini buradan sen girersin.</p>
+            </form>
+        </aside>
+
+        @if (Model.Selected is { } sel)
+        {
+            <form method="post" asp-page-handler="Save" asp-route-id="@sel.UserId" class="min-w-0 flex-1" x-data="{ setAll(side) { this.$root.querySelectorAll('input[value=' + side + ']').forEach(i => i.checked = true) } }">
+                <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h2 class="h2">@sel.DisplayName tahminleri</h2>
+                        <p class="text-sm muted">
+                            @(Model.Locked
+                                ? "Sezon başladı: değişiklikler yine yapılabilir ama her değişiklik denetim kaydına yazılır ve puanlar yeniden hesaplanır."
+                                : "Mutfak tahminleri her zaman herkese açıktır.")
+                        </p>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+                @if (Model.Locked)
+                {
+                    <div class="alert-info mb-3">⚠️ Tahminler kilitli. Yalnızca gerçekten yanlış girilmiş bir tahmini düzeltmek için kullan.</div>
+                }
+                <div class="card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="table-app min-w-[520px]">
+                            <thead class="bg-zinc-50 dark:bg-ink-850">
+                                <tr>
+                                    <th>Takım</th>
+                                    <th class="text-right">Barem</th>
+                                    <th class="text-center"><button type="button" class="hover:text-sky-500" x-on:click="setAll('Under')" title="Hepsini ALT yap">ALT</button></th>
+                                    <th class="text-center"><button type="button" class="hover:text-brand-500" x-on:click="setAll('Over')" title="Hepsini ÜST yap">ÜST</button></th>
+                                    <th class="text-center">Boş</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in Model.Teams)
+                                {
+                                    var current = sel.Picks.TryGetValue(t.Id, out var s) ? s.ToString() : "";
+                                    <tr>
+                                        <td><span class="flex items-center gap-2">@Badges.Team(t, "xs") <span class="font-semibold">@t.FullName</span></span></td>
+                                        <td class="text-right tabular-nums">@Display.Line(t.Line)</td>
+                                        @foreach (var (value, label, accent) in new[] { ("Under", "ALT", "accent-sky-500"), ("Over", "ÜST", "accent-brand-500"), ("", "Boş", "accent-zinc-500") })
+                                        {
+                                            <td class="text-center">
+                                                <input type="radio" name="Picks[@t.Id]" value="@value" checked="@(current == value)" class="size-5 @accent" aria-label="@t.FullName @label" />
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end"><button type="submit" class="btn btn-primary">Kaydet</button></div>
+            </form>
+        }
+        else
+        {
+            <p class="card card-pad flex-1 muted">Henüz Mutfak oyuncusu yok. "seed" komutu Kaan Kural ve İnan Özdemir'i oluşturur.</p>
+        }
+    </div>
+</div>

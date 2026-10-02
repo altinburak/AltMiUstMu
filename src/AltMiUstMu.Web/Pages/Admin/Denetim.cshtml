@@ -1,0 +1,54 @@
+@page
+@model AltMiUstMu.Web.Pages.Admin.DenetimModel
+@{
+    ViewData["Title"] = "Denetim kaydı";
+    string ActionLabel(string a) => a switch
+    {
+        "line" => "Barem",
+        "pundit-pick" => "Mutfak tahmini",
+        "pundit" => "Mutfak oyuncusu",
+        "manual-record" => "Manuel derece",
+        "season" => "Sezon",
+        "user" => "Kullanıcı",
+        _ => a,
+    };
+}
+<div class="container-app py-6 sm:py-8">
+    <partial name="_AdminNav" />
+    <h1 class="h2">Denetim kaydı</h1>
+    <p class="mb-4 text-sm muted">Barem, Mutfak tahmini, manuel derece, sezon ve kullanıcı değişikliklerinin tamamı.</p>
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table-app min-w-[720px]">
+                <thead class="bg-zinc-50 dark:bg-ink-850">
+                    <tr><th>Zaman (TSİ)</th><th>Kim</th><th>Tür</th><th>Hedef</th><th>Eski</th><th>Yeni</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.Rows)
+                    {
+                        <tr>
+                            <td class="text-xs whitespace-nowrap tabular-nums muted">@Display.ShortDateTime(a.CreatedAt)</td>
+                            <td class="font-semibold">@a.ActorName</td>
+                            <td><span class="chip bg-zinc-500/10">@ActionLabel(a.Action)</span></td>
+                            <td>@a.Target</td>
+                            <td class="text-sm text-red-600 dark:text-red-400">@(a.OldValue ?? "–")</td>
+                            <td class="text-sm text-emerald-600 dark:text-emerald-400">@(a.NewValue ?? "–")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.Rows.Count == 0)
+        {
+            <p class="p-6 text-center muted">Henüz kayıt yok.</p>
+        }
+    </div>
+    @if (Model.PageCount > 1)
+    {
+        <nav class="mt-4 flex items-center justify-between" aria-label="Sayfalama">
+            <a class="btn btn-secondary btn-sm @(Model.PageNumber <= 1 ? "pointer-events-none opacity-40" : "")" href="?p=@(Model.PageNumber - 1)">← Önceki</a>
+            <span class="text-sm muted">Sayfa @Model.PageNumber / @Model.PageCount</span>
+            <a class="btn btn-secondary btn-sm @(Model.PageNumber >= Model.PageCount ? "pointer-events-none opacity-40" : "")" href="?p=@(Model.PageNumber + 1)">Sonraki →</a>
+        </nav>
+    }
+</div>

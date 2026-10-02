@@ -1,0 +1,34 @@
+@model AltMiUstMu.Web.Pages.Tahminler.PickProgressVm
+@{
+    var pct = Model.Total == 0 ? 0 : (double)Model.Count / Model.Total * 100;
+    var complete = Model.Count >= Model.Total;
+}
+<div id="pick-progress" hx-swap-oob="@(Model.Oob ? "true" : null)" class="flex flex-col gap-2">
+    <div class="flex items-center justify-between gap-3 text-sm">
+        <p class="font-semibold">
+            <span class="tabular-nums">@Model.Count/@Model.Total</span> takım seçildi
+            @if (complete)
+            {
+                <span class="ml-1 text-emerald-600 dark:text-emerald-400">· Tamamdır! @(Model.Locked ? "Sıralamadasın." : "İstersen kilitlenene kadar değiştirebilirsin.") 🎉</span>
+            }
+            else if (!Model.Locked)
+            {
+                <span class="ml-1 hidden muted sm:inline">· Sıralamaya girmek için hepsini seç</span>
+            }
+            else
+            {
+                <span class="ml-1 text-amber-600 dark:text-amber-400">· Eksik tahminle sıralamaya giremezsin</span>
+            }
+        </p>
+        @if (!Model.Locked)
+        {
+            <p class="flex shrink-0 items-center gap-1 text-xs muted" x-data="countdown('@Display.Iso(Model.LockAt)')">
+                @Icons.Svg("clock", "size-4")
+                <span class="tabular-nums"><span x-text="d">--</span>g <span x-text="h">--</span>s <span x-text="m">--</span>d</span>
+            </p>
+        }
+    </div>
+    <div class="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-ink-800" role="progressbar" aria-valuemin="0" aria-valuemax="@Model.Total" aria-valuenow="@Model.Count" aria-label="Tahmin ilerlemesi">
+        <div class="h-full rounded-full transition-all duration-500 @(complete ? "bg-emerald-500" : "bg-brand-500")" style="width: @Display.Css(pct)%"></div>
+    </div>
+</div>

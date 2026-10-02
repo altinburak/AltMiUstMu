@@ -1,0 +1,85 @@
+@page
+@model AltMiUstMu.Web.Pages.Admin.KullanicilarModel
+@{
+    ViewData["Title"] = "Kullanıcılar";
+}
+<div class="container-app py-6 sm:py-8">
+    <partial name="_AdminNav" />
+    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="h2">Kullanıcılar</h1>
+            <p class="text-sm muted">@Model.Total kullanıcı</p>
+        </div>
+        <form method="get" class="relative w-full sm:w-80" role="search">
+            <label for="q" class="sr-only">Ad veya e-posta ara</label>
+            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">@Icons.Svg("search", "size-4")</span>
+            <input id="q" name="q" type="search" value="@Model.Query" placeholder="Ad veya e-posta…" class="input pl-9" />
+        </form>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table-app min-w-[760px]">
+                <thead class="bg-zinc-50 dark:bg-ink-850">
+                    <tr><th>Kullanıcı</th><th>E-posta</th><th>Kayıt (TSİ)</th><th class="text-right">Tahmin</th><th>Durum</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model.Rows)
+                    {
+                        <tr class="@(u.IsDisabled ? "opacity-60" : "")">
+                            <td>
+                                <a href="/oyuncu/@Uri.EscapeDataString(u.DisplayName)" class="font-semibold hover:underline">@u.DisplayName</a>
+                                @if (u.IsAdmin)
+                                {
+                                    <span class="chip ml-1 bg-brand-500/15 text-brand-700 dark:text-brand-300">Admin</span>
+                                }
+                            </td>
+                            <td class="text-sm">
+                                @u.Email
+                                @if (!u.EmailConfirmed)
+                                {
+                                    <span class="chip ml-1 bg-amber-500/15 text-amber-700 dark:text-amber-300">doğrulanmadı</span>
+                                }
+                            </td>
+                            <td class="text-xs whitespace-nowrap muted">@Display.ShortDateTime(u.CreatedAt)</td>
+                            <td class="text-right tabular-nums">@u.Picks/30</td>
+                            <td>
+                                @if (u.IsDisabled)
+                                {
+                                    <span class="chip bg-red-500/15 text-red-700 dark:text-red-300">Devre dışı</span>
+                                }
+                                else
+                                {
+                                    <span class="chip bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Aktif</span>
+                                }
+                            </td>
+                            <td class="text-right">
+                                <form method="post" asp-page-handler="Toggle" asp-route-q="@Model.Query" asp-route-p="@Model.PageNumber">
+                                    <input type="hidden" name="userId" value="@u.Id" />
+                                    <input type="hidden" name="disable" value="@(u.IsDisabled ? "false" : "true")" />
+                                    <button type="submit" class="btn btn-sm @(u.IsDisabled ? "btn-secondary" : "btn-ghost text-red-600 dark:text-red-400")"
+                                            onclick="return confirm('@(u.IsDisabled ? "Kullanıcı yeniden etkinleştirilsin mi?" : "Kullanıcı devre dışı bırakılsın mı? Oturumu kapanır ve sıralamadan çıkar.")')">
+                                        @(u.IsDisabled ? "Etkinleştir" : "Devre dışı bırak")
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.Rows.Count == 0)
+        {
+            <p class="p-6 text-center muted">Kullanıcı bulunamadı.</p>
+        }
+    </div>
+
+    @if (Model.PageCount > 1)
+    {
+        <nav class="mt-4 flex items-center justify-between" aria-label="Sayfalama">
+            <a class="btn btn-secondary btn-sm @(Model.PageNumber <= 1 ? "pointer-events-none opacity-40" : "")" href="?q=@Uri.EscapeDataString(Model.Query ?? "")&p=@(Model.PageNumber - 1)">← Önceki</a>
+            <span class="text-sm muted">Sayfa @Model.PageNumber / @Model.PageCount</span>
+            <a class="btn btn-secondary btn-sm @(Model.PageNumber >= Model.PageCount ? "pointer-events-none opacity-40" : "")" href="?q=@Uri.EscapeDataString(Model.Query ?? "")&p=@(Model.PageNumber + 1)">Sonraki →</a>
+        </nav>
+    }
+</div>

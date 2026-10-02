@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+@source "../Pages";
+@source "../Helpers";
+@source "../wwwroot/js";
+
+/* Dark mode is class based so the theme toggle (and the no-flash script in <head>) control it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Basketball orange. */
+  --color-brand-50: #fff6ed;
+  --color-brand-100: #ffead4;
+  --color-brand-200: #ffd0a8;
+  --color-brand-300: #ffad70;
+  --color-brand-400: #ff8a3d;
+  --color-brand-500: #f97316;
+  --color-brand-600: #ea5f0c;
+  --color-brand-700: #c2470c;
+  --color-brand-800: #9a3912;
+  --color-brand-900: #7c3112;
+  --color-brand-950: #431407;
+
+  /* Surfaces: deep "arena" navy-black for dark mode. */
+  --color-ink-950: #07090d;
+  --color-ink-900: #0d1117;
+  --color-ink-850: #121821;
+  --color-ink-800: #18202b;
+  --color-ink-700: #263142;
+  --color-ink-600: #3a475b;
+
+  --animate-fade-in: fade-in 0.25s ease-out;
+  --animate-pop: pop 0.18s ease-out;
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.96); }
+    100% { transform: scale(1); }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    font-feature-settings: "cv11", "ss01";
+    scroll-padding-top: 8rem;
+  }
+
+  body {
+    @apply bg-zinc-50 text-zinc-900 antialiased dark:bg-ink-950 dark:text-zinc-100;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+}
+
+@layer components {
+  .container-app {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+
+  .card {
+    @apply rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-ink-700/70 dark:bg-ink-900;
+  }
+
+  .card-pad {
+    @apply p-4 sm:p-5;
+  }
+
+  .muted {
+    @apply text-zinc-500 dark:text-zinc-400;
+  }
+
+  .h1 {
+    @apply text-2xl font-extrabold tracking-tight sm:text-3xl;
+  }
+
+  .h2 {
+    @apply text-lg font-bold tracking-tight;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold tracking-wider text-brand-600 uppercase dark:text-brand-400;
+  }
+
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-150 select-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-brand-500 text-white shadow-sm shadow-brand-500/30 hover:bg-brand-600;
+  }
+
+  .btn-secondary {
+    @apply border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-ink-600 dark:bg-ink-800 dark:text-zinc-100 dark:hover:bg-ink-700;
+  }
+
+  .btn-ghost {
+    @apply text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-ink-800;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700;
+  }
+
+  .btn-sm {
+    @apply min-h-9 rounded-lg px-3 py-1.5 text-xs;
+  }
+
+  .input {
+    @apply block w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-base text-zinc-900 placeholder-zinc-400 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 focus:outline-none sm:text-sm dark:border-ink-600 dark:bg-ink-850 dark:text-zinc-100 dark:placeholder-zinc-500;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300;
+  }
+
+  .field-error {
+    @apply mt-1 text-sm text-red-600 dark:text-red-400;
+  }
+
+  .alert {
+    @apply rounded-xl border px-4 py-3 text-sm;
+  }
+
+  .alert-error {
+    @apply border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200;
+  }
+
+  .alert-success {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200;
+  }
+
+  .alert-info {
+    @apply border-brand-200 bg-brand-50 text-brand-900 dark:border-brand-900/60 dark:bg-brand-950/30 dark:text-brand-100;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap;
+  }
+
+  .team-badge {
+    @apply inline-flex shrink-0 items-center justify-center rounded-xl font-black tracking-tight shadow-sm;
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-md bg-zinc-200 dark:bg-ink-800;
+  }
+
+  .table-app {
+    @apply w-full text-left text-sm;
+  }
+
+  .table-app th {
+    @apply px-3 py-2.5 text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400;
+  }
+
+  .table-app td {
+    @apply px-3 py-3 align-middle;
+  }
+
+  .table-app tbody tr {
+    @apply border-t border-zinc-100 dark:border-ink-800;
+  }
+
+  .nav-link {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-ink-800 dark:hover:text-white;
+  }
+
+  .nav-link-active {
+    @apply bg-zinc-100 text-zinc-900 dark:bg-ink-800 dark:text-white;
+  }
+
+  .tab-link {
+    @apply flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium text-zinc-500 transition dark:text-zinc-400;
+  }
+
+  .tab-link-active {
+    @apply text-brand-600 dark:text-brand-400;
+  }
+
+  .pick-btn {
+    @apply flex min-h-14 flex-1 flex-col items-center justify-center rounded-xl border-2 text-base font-extrabold tracking-wide transition duration-150 select-none active:scale-[0.97];
+  }
+
+  .pick-btn-idle {
+    @apply border-zinc-200 bg-zinc-50 text-zinc-500 hover:border-zinc-300 hover:text-zinc-800 dark:border-ink-700 dark:bg-ink-850 dark:text-zinc-400 dark:hover:border-ink-600 dark:hover:text-white;
+  }
+
+  .pick-btn-over {
+    @apply border-brand-500 bg-brand-500 text-white shadow-md shadow-brand-500/30;
+  }
+
+  .pick-btn-under {
+    @apply border-sky-500 bg-sky-500 text-white shadow-md shadow-sky-500/30;
+  }
+
+  .stat {
+    @apply text-3xl font-extrabold tracking-tight tabular-nums;
+  }
+
+  .court-lines {
+    background-image:
+      radial-gradient(circle at 50% 120%, transparent 0 38%, rgb(249 115 22 / 0.18) 38% calc(38% + 2px), transparent calc(38% + 2px)),
+      radial-gradient(circle at 50% 120%, transparent 0 16%, rgb(249 115 22 / 0.14) 16% calc(16% + 2px), transparent calc(16% + 2px));
+  }
+}
+
+/* htmx: dim swapping targets, show indicators while a request is in flight. */
+.htmx-request.pick-card,
+.htmx-request .pick-card {
+  opacity: 0.7;
+}
+
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline-flex;
+}
+
+.htmx-request.hide-on-request,
+.htmx-request .hide-on-request {
+  display: none;
+}
+
+.htmx-added {
+  animation: var(--animate-fade-in);
+}

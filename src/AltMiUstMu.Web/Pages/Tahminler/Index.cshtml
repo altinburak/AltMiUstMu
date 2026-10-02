@@ -1,0 +1,67 @@
+@page
+@model AltMiUstMu.Web.Pages.Tahminler.IndexModel
+@{
+    ViewData["Title"] = "Tahminlerim";
+}
+
+@if (Model.Season is null)
+{
+    <div class="container-app py-16 text-center">
+        <p class="h2">Henüz bir sezon tanımlanmadı.</p>
+        <p class="muted mt-2">Yönetici sezonu açtığında tahminlerini buradan yapabileceksin.</p>
+    </div>
+    return;
+}
+
+<div x-data="punditToggle">
+    <section class="container-app pt-6 sm:pt-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="eyebrow">@Model.Season.Label sezonu</p>
+                <h1 class="h1 mt-1">Tahminlerim</h1>
+                @if (Model.Locked)
+                {
+                    <p class="muted mt-1 flex items-center gap-1.5">@Icons.Svg("lock", "size-4") Tahminler @Display.DateTime(Model.Season.LockAt) itibarıyla kilitli. Canlı durumu aşağıda takip et.</p>
+                }
+                else
+                {
+                    <p class="muted mt-1">Her takım için sezon sonu galibiyet sayısı bareme göre <strong>ALT</strong> mı, <strong>ÜST</strong> mü? Seçimin anında kaydedilir.</p>
+                }
+            </div>
+
+            @if (Model.Pundits.Count > 0)
+            {
+                <button type="button" x-on:click="flip()" role="switch" x-bind:aria-checked="showPundits.toString()" aria-checked="false"
+                        class="flex items-center gap-3 self-start rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm transition hover:border-brand-400 sm:self-auto dark:border-ink-700 dark:bg-ink-900">
+                    <span class="text-lg" aria-hidden="true">🎙️</span>
+                    <span>Kaan ve İnan ne dedi?</span>
+                    <span class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition" x-bind:class="showPundits ? 'bg-brand-500' : 'bg-zinc-300 dark:bg-ink-600'">
+                        <span class="absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition" x-bind:class="showPundits && 'translate-x-5'"></span>
+                    </span>
+                </button>
+            }
+        </div>
+    </section>
+
+    <div class="sticky top-16 z-30 mt-4 border-y border-zinc-200 bg-zinc-50/90 backdrop-blur-lg dark:border-ink-800 dark:bg-ink-950/90">
+        <div class="container-app py-3">
+            <partial name="_PickProgress" model="Model.Progress()" />
+        </div>
+    </div>
+
+    @foreach (var conference in Model.Teams.GroupBy(t => t.Conference).OrderBy(g => g.Key))
+    {
+        <section class="container-app mt-8" aria-labelledby="conf-@conference.Key">
+            <h2 id="conf-@conference.Key" class="h2 mb-3 flex items-center gap-2">
+                <span class="inline-block h-5 w-1.5 rounded-full @(conference.Key == Conference.East ? "bg-sky-500" : "bg-brand-500")"></span>
+                @Display.ConferenceLabel(conference.Key)
+            </h2>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach (var team in conference.OrderBy(t => t.Division).ThenBy(t => t.City))
+                {
+                    <partial name="_PickCard" model="Model.Card(team)" />
+                }
+            </div>
+        </section>
+    }
+</div>

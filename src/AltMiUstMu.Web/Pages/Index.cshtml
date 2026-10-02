@@ -1,0 +1,162 @@
+@page
+@model IndexModel
+@{
+    ViewData["Description"] = "NBA 2026-27 sezonu için 30 takımın galibiyet baremine ALT mı ÜST mü de, Amerikan Mutfak'tan Kaan Kural ve İnan Özdemir'le yarış. Ücretsiz, bahissiz, tamamen eğlence.";
+    var signedIn = User.Identity?.IsAuthenticated == true;
+}
+
+<section class="relative overflow-hidden border-b border-zinc-200 dark:border-ink-800">
+    <div class="court-lines pointer-events-none absolute inset-0 opacity-70" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute -top-24 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-brand-500/20 blur-3xl" aria-hidden="true"></div>
+    <div class="container-app relative py-12 text-center sm:py-20">
+        @if (Model.Season is not null)
+        {
+            <p class="eyebrow">NBA @Model.Season.Label sezonu · Amerikan Mutfak tahmin oyunu</p>
+        }
+        <h1 class="mx-auto mt-3 max-w-3xl text-4xl font-black tracking-tight sm:text-6xl">
+            30 takım. 30 barem.<br />
+            <span class="bg-gradient-to-r from-brand-500 to-amber-400 bg-clip-text text-transparent">Alt mı, Üst mü?</span>
+        </h1>
+        <p class="mx-auto mt-5 max-w-xl text-base muted sm:text-lg">
+            Her NBA takımının sezon galibiyet barajına ALT ya da ÜST de. Sonuçlar her gün güncellenir.
+            <strong class="text-zinc-800 dark:text-zinc-200">Kaan ve İnan'ı geçebilecek misin?</strong>
+        </p>
+
+        @if (Model.Season is not null && !Model.Locked)
+        {
+            <div class="mx-auto mt-8 max-w-md" x-data="countdown('@Display.Iso(Model.Season.LockAt)')">
+                <p class="text-xs font-semibold tracking-wider uppercase muted">Tahminler kilitlenene kadar</p>
+                <div class="mt-3 grid grid-cols-4 gap-2 sm:gap-3" role="timer" aria-live="off">
+                    @foreach (var (unit, label) in new[] { ("d", "Gün"), ("h", "Saat"), ("m", "Dakika"), ("s", "Saniye") })
+                    {
+                        <div class="card px-2 py-3">
+                            <div class="text-3xl font-black tabular-nums sm:text-4xl" x-text="@unit">--</div>
+                            <div class="mt-1 text-[11px] font-medium tracking-wide uppercase muted">@label</div>
+                        </div>
+                    }
+                </div>
+                <p class="mt-3 text-sm muted">Kilit: @Display.DateTime(Model.Season.LockAt) (TSİ)</p>
+            </div>
+        }
+
+        <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            @if (signedIn)
+            {
+                <a href="/tahminler" class="btn btn-primary w-full px-6 text-base sm:w-auto">Tahminlerime git @Icons.Svg("arrow-right", "size-4")</a>
+                <a href="/liderlik" class="btn btn-secondary w-full px-6 text-base sm:w-auto">Liderlik tablosu</a>
+            }
+            else
+            {
+                <a href="/hesap/kayit" class="btn btn-primary w-full px-6 text-base sm:w-auto">Ücretsiz kayıt ol @Icons.Svg("arrow-right", "size-4")</a>
+                <a href="/hesap/giris" class="btn btn-secondary w-full px-6 text-base sm:w-auto">Giriş yap</a>
+            }
+        </div>
+        @if (!Model.Locked && Model.CompletePlayers > 0)
+        {
+            <p class="mt-4 text-sm muted"><strong class="text-zinc-800 dark:text-zinc-200">@Model.CompletePlayers</strong> oyuncu 30 tahminini tamamladı.</p>
+        }
+    </div>
+</section>
+
+@if (Model.Locked)
+{
+    <section class="container-app mt-10 grid gap-6 lg:grid-cols-5">
+        <div class="card overflow-hidden lg:col-span-3">
+            <div class="flex items-center justify-between px-5 pt-5">
+                <h2 class="h2 flex items-center gap-2">@Icons.Svg("trophy", "size-5 text-brand-500") İlk 5</h2>
+                <a href="/liderlik" class="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-400">Tümü (@Model.RankedCount)</a>
+            </div>
+            @if (Model.Top.Count == 0)
+            {
+                <p class="p-5 muted">Puanlar ilk senkronizasyondan sonra burada görünecek.</p>
+            }
+            else
+            {
+                <ol class="mt-3 divide-y divide-zinc-100 dark:divide-ink-800">
+                    @foreach (var row in Model.Top)
+                    {
+                        <li class="flex items-center gap-3 px-5 py-3">
+                            <span class="w-6 text-center text-lg font-black tabular-nums @(row.Score.Rank == 1 ? "text-brand-500" : "muted")">@row.Score.Rank</span>
+                            <a href="/oyuncu/@Uri.EscapeDataString(row.DisplayName)" class="min-w-0 flex-1 truncate font-semibold hover:underline">@row.DisplayName</a>
+                            @if (row.IsPundit)
+                            {
+                                @Badges.Pundit()
+                            }
+                            <span class="text-right tabular-nums"><strong class="text-lg">@row.Score.ProjectedCorrect</strong><span class="text-xs muted"> proj.</span></span>
+                        </li>
+                    }
+                </ol>
+            }
+        </div>
+
+        <div class="lg:col-span-2">
+            <h2 class="h2 mb-3">🎙️ Mutfak cephesi</h2>
+            <div class="grid gap-3">
+                @foreach (var p in Model.Pundits)
+                {
+                    <a href="/oyuncu/@Uri.EscapeDataString(p.DisplayName)" class="card card-pad flex items-center gap-4 transition hover:border-brand-400">
+                        <span class="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-amber-400 text-lg font-black text-white">@Display.Initials(p.DisplayName)</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate font-bold">@p.DisplayName</p>
+                            <p class="text-sm muted">@(p.Score?.Rank is int r ? $"{r}. sırada" : "Sıralama bekleniyor")</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="stat text-2xl">@(p.Score?.ProjectedCorrect ?? 0)</div>
+                            <div class="text-xs muted">Kesin @(p.Score?.ClinchedCorrect ?? 0)</div>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="container-app mt-12" aria-labelledby="how">
+    <h2 id="how" class="h2 text-center">Nasıl oynanır?</h2>
+    <div class="mt-6 grid gap-4 sm:grid-cols-3">
+        @foreach (var (n, t, d) in new[]
+        {
+            ("1", "Barem gelir", "Sezon öncesi her takım için Vegas galibiyet baremi açıklanır. Örneğin Celtics: 50,5."),
+            ("2", "ALT mı ÜST mü?", "Sezon başlamadan 30 takımın hepsi için seçimini yap. Kilit anına kadar istediğin kadar değiştirebilirsin."),
+            ("3", "Her gün takip et", "Gerçek maç sonuçlarıyla puanın her gün güncellenir: Kesin kazanılanlar ve projeksiyon."),
+        })
+        {
+            <div class="card card-pad">
+                <span class="grid size-9 place-items-center rounded-xl bg-brand-500 font-black text-white">@n</span>
+                <h3 class="mt-3 font-bold">@t</h3>
+                <p class="mt-1 text-sm muted">@d</p>
+            </div>
+        }
+    </div>
+</section>
+
+@if (!Model.Locked && Model.Pundits.Count > 0)
+{
+    <section class="container-app mt-12">
+        <div class="card overflow-hidden">
+            <div class="bg-gradient-to-r from-brand-500/15 via-transparent to-transparent p-5 sm:p-8">
+                <p class="eyebrow">Amerikan Mutfak</p>
+                <h2 class="mt-1 text-2xl font-black tracking-tight">Kaan ve İnan'ı geçebilecek misin?</h2>
+                <p class="mt-2 max-w-2xl muted">Programın sunucuları Kaan Kural ve İnan Özdemir de tahminlerini yaptı. Onların seçimleri her zaman açık; seninkiler ise sezon başlayana kadar gizli.</p>
+                <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                    @foreach (var p in Model.Pundits)
+                    {
+                        var overs = p.Picks.Values.Count(s => s == PickSide.Over);
+                        <a href="/oyuncu/@Uri.EscapeDataString(p.DisplayName)" class="flex items-center gap-4 rounded-2xl border border-zinc-200 bg-white/70 p-4 transition hover:border-brand-400 dark:border-ink-700 dark:bg-ink-900/70">
+                            <span class="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-amber-400 text-lg font-black text-white">@Display.Initials(p.DisplayName)</span>
+                            <div class="flex-1">
+                                <p class="font-bold">@p.DisplayName</p>
+                                <p class="text-sm muted">@p.Picks.Count/@Model.TeamCount tahmin · @overs ÜST, @(p.Picks.Count - overs) ALT</p>
+                            </div>
+                            @Icons.Svg("arrow-right", "size-4 text-zinc-400")
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<section class="container-app mt-12 mb-4 text-center">
+    <p class="text-sm muted">Para yok, bahis yok, sadece eğlence ve övünme hakkı. 🏀</p>
+</section>

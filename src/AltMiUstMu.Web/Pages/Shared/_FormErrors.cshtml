@@ -1,0 +1,21 @@
+@{
+    var errors = ViewData.ModelState[string.Empty]?.Errors;
+}
+@if (errors is { Count: > 0 })
+{
+    <div class="alert-error mb-4" role="alert">
+        @if (errors.Count == 1)
+        {
+            @errors[0].ErrorMessage
+        }
+        else
+        {
+            <ul class="list-disc space-y-1 pl-4">
+                @foreach (var e in errors)
+                {
+                    <li>@e.ErrorMessage</li>
+                }
+            </ul>
+        }
+    </div>
+}

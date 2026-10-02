@@ -1,0 +1,51 @@
+@page
+@model AltMiUstMu.Web.Pages.Admin.BaremlerModel
+@{
+    ViewData["Title"] = "Baremler";
+}
+<div class="container-app py-6 sm:py-8">
+    <partial name="_AdminNav" />
+    <form method="post" novalidate>
+        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h1 class="h2">Galibiyet baremleri</h1>
+                <p class="text-sm muted">30 takımın tamamını tek seferde kaydet. Ondalık ayırıcı olarak nokta ya da virgül kullanabilirsin.</p>
+            </div>
+            <button type="submit" class="btn btn-primary">Tümünü kaydet</button>
+        </div>
+
+        @if (Model.Locked)
+        {
+            <div class="alert-info mb-4">Tahminler kilitli. Barem değişiklikleri tüm oyuncuların puanlarını etkiler ve denetim kaydına yazılır.</div>
+        }
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="alert-error mb-4" role="alert"><ul class="list-disc pl-4">@foreach (var e in Model.Errors) { <li>@e</li> }</ul></div>
+        }
+
+        <div class="grid gap-3 md:grid-cols-2">
+            @foreach (var conf in Model.Teams.GroupBy(t => t.Conference))
+            {
+                <div class="card overflow-hidden">
+                    <h2 class="border-b border-zinc-100 px-4 py-3 font-bold dark:border-ink-800">@Display.ConferenceLabel(conf.Key)</h2>
+                    <table class="table-app">
+                        <tbody>
+                            @foreach (var t in conf)
+                            {
+                                <tr>
+                                    <td class="w-12">@Badges.Team(t, "xs")</td>
+                                    <td><label for="line-@t.Id" class="font-semibold">@t.FullName</label></td>
+                                    <td class="w-28">
+                                        <input id="line-@t.Id" name="Lines[@t.Id]" value="@Model.Lines.GetValueOrDefault(t.Id)" inputmode="decimal" autocomplete="off"
+                                               class="input py-1.5 text-right font-bold tabular-nums" aria-label="@t.FullName barem" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="mt-4 flex justify-end"><button type="submit" class="btn btn-primary">Tümünü kaydet</button></div>
+    </form>
+</div>

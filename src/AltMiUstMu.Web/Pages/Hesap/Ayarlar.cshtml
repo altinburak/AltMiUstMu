@@ -1,0 +1,43 @@
+@page "/hesap/ayarlar"
+@model AltMiUstMu.Web.Pages.Hesap.AyarlarModel
+@{
+    ViewData["Title"] = "Hesap ayarları";
+}
+<div class="container-app max-w-2xl! py-8">
+    <p class="eyebrow">Hesap</p>
+    <h1 class="h1 mt-1">Ayarlar</h1>
+    <p class="muted mt-1">@Model.Email</p>
+
+    <form method="post" asp-page-handler="Name" class="card card-pad mt-6 space-y-4" novalidate>
+        <h2 class="h2">Kullanıcı adı</h2>
+        <div>
+            <label asp-for="Name.DisplayName" class="label"></label>
+            <input asp-for="Name.DisplayName" class="input" maxlength="20" autocomplete="nickname" />
+            <p class="mt-1 text-xs muted">Profil bağlantın da değişir: /oyuncu/&lt;kullanıcı adı&gt;</p>
+            <span asp-validation-for="Name.DisplayName" class="field-error"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+    </form>
+
+    <form method="post" asp-page-handler="Password" class="card card-pad mt-6 space-y-4" novalidate>
+        <h2 class="h2">Şifre değiştir</h2>
+        <div>
+            <label asp-for="Password.Current" class="label"></label>
+            <input asp-for="Password.Current" class="input" autocomplete="current-password" />
+            <span asp-validation-for="Password.Current" class="field-error"></span>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+                <label asp-for="Password.New" class="label"></label>
+                <input asp-for="Password.New" class="input" autocomplete="new-password" />
+                <span asp-validation-for="Password.New" class="field-error"></span>
+            </div>
+            <div>
+                <label asp-for="Password.Confirm" class="label"></label>
+                <input asp-for="Password.Confirm" class="input" autocomplete="new-password" />
+                <span asp-validation-for="Password.Confirm" class="field-error"></span>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-secondary">Şifreyi güncelle</button>
+    </form>
+</div>

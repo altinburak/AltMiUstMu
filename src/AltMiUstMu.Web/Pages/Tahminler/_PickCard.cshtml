@@ -1,0 +1,71 @@
+@model AltMiUstMu.Web.Pages.Tahminler.PickCardVm
+@{
+    var t = Model.Team;
+    var mine = Model.Mine;
+    var under = mine == PickSide.Under;
+    var over = mine == PickSide.Over;
+    var punditPicks = Model.Pundits.Where(p => p.Picks.ContainsKey(t.Id)).ToList();
+}
+<article id="pick-@t.Abbreviation" class="pick-card card card-pad flex flex-col gap-3 transition-opacity" aria-label="@t.FullName">
+    <div class="flex items-center gap-3">
+        @Badges.Team(t)
+        <div class="min-w-0 flex-1">
+            <a href="/takim/@t.Abbreviation.ToLowerInvariant()" class="block truncate font-bold hover:text-brand-600 dark:hover:text-brand-400">@t.FullName</a>
+            <p class="truncate text-xs muted">@t.Division · topluluk @(t.TotalPicks == 0 ? "–" : Display.Percent(t.OverShare) + " ÜST")</p>
+        </div>
+        <div class="text-right">
+            <div class="text-[10px] font-semibold tracking-wider uppercase muted">Barem</div>
+            <div class="text-2xl leading-none font-black tabular-nums">@Display.Line(t.Line)</div>
+        </div>
+    </div>
+
+    @if (!Model.Locked)
+    {
+        <div class="flex gap-2" role="group" aria-label="@t.FullName için tahminin">
+            <button type="button"
+                    hx-post="@Model.PostUrl" hx-vals='{"teamId": @t.Id, "side": "Under"}' hx-target="#pick-@t.Abbreviation" hx-swap="outerHTML" hx-disabled-elt="this"
+                    aria-pressed="@(under ? "true" : "false")" aria-label="@t.FullName: ALT, @Display.Line(t.Line) galibiyetin altı"
+                    class="pick-btn @(under ? "pick-btn-under animate-pop" : "pick-btn-idle")">
+                <span>ALT</span>
+                <span class="text-[11px] font-medium opacity-80">&lt; @Display.Line(t.Line)</span>
+            </button>
+            <button type="button"
+                    hx-post="@Model.PostUrl" hx-vals='{"teamId": @t.Id, "side": "Over"}' hx-target="#pick-@t.Abbreviation" hx-swap="outerHTML" hx-disabled-elt="this"
+                    aria-pressed="@(over ? "true" : "false")" aria-label="@t.FullName: ÜST, @Display.Line(t.Line) galibiyetin üstü"
+                    class="pick-btn @(over ? "pick-btn-over animate-pop" : "pick-btn-idle")">
+                <span>ÜST</span>
+                <span class="text-[11px] font-medium opacity-80">&gt; @Display.Line(t.Line)</span>
+            </button>
+        </div>
+    }
+    else
+    {
+        var status = mine is null ? (PickStatus?)null : t.StatusFor(mine.Value);
+        <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 text-sm">
+                <span class="muted">Tahminin:</span>
+                @Badges.Side(mine)
+            </div>
+            @Badges.Status(status)
+        </div>
+        <partial name="_WinsBar" model="t" />
+    }
+
+    @if (punditPicks.Count > 0)
+    {
+        <div x-show="showPundits" x-cloak class="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-zinc-100 pt-3 text-xs dark:border-ink-800">
+            @foreach (var p in punditPicks)
+            {
+                var side = p.Picks[t.Id];
+                <span class="flex items-center gap-1.5">
+                    <span class="font-semibold">@p.ShortName</span>
+                    @Badges.Side(side)
+                    @if (mine is not null)
+                    {
+                        <span class="@(side == mine ? "text-emerald-500" : "text-zinc-400")" title="@(side == mine ? "Seninle aynı" : "Senden farklı")">@(side == mine ? "✓" : "≠")</span>
+                    }
+                </span>
+            }
+        </div>
+    }
+</article>

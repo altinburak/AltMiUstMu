@@ -1,0 +1,25 @@
+@{
+    var path = Context.Request.Path.Value?.ToLowerInvariant().TrimEnd('/') ?? "";
+    var items = new[]
+    {
+        ("/admin", "Genel"),
+        ("/admin/sezon", "Sezon"),
+        ("/admin/baremler", "Baremler"),
+        ("/admin/punditler", "Mutfak"),
+        ("/admin/kayitlar", "Dereceler"),
+        ("/admin/kullanicilar", "Kullanıcılar"),
+        ("/admin/denetim", "Denetim"),
+    };
+}
+<div class="mb-6">
+    <p class="eyebrow flex items-center gap-1.5">@Icons.Svg("shield", "size-4") Yönetim</p>
+    <nav class="-mx-4 mt-3 overflow-x-auto px-4" aria-label="Yönetim menüsü">
+        <div class="flex w-max gap-1 rounded-2xl border border-zinc-200 bg-white p-1 dark:border-ink-700 dark:bg-ink-900">
+            @foreach (var (href, label) in items)
+            {
+                var active = path == href;
+                <a href="@href" class="rounded-xl px-3 py-2 text-sm font-semibold whitespace-nowrap transition @(active ? "bg-brand-500 text-white" : "muted hover:bg-zinc-100 dark:hover:bg-ink-800")" aria-current="@(active ? "page" : null)">@label</a>
+            }
+        </div>
+    </nav>
+</div>

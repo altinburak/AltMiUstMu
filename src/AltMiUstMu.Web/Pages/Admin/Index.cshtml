@@ -1,0 +1,78 @@
+@page
+@model AltMiUstMu.Web.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Yönetim";
+}
+<div class="container-app py-6 sm:py-8">
+    <partial name="_AdminNav" />
+
+    <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div class="card card-pad"><p class="text-xs font-semibold uppercase muted">Kullanıcı</p><p class="stat mt-1">@Model.Users</p></div>
+        <div class="card card-pad"><p class="text-xs font-semibold uppercase muted">30/30 tamamlayan</p><p class="stat mt-1">@Model.CompletePlayers</p></div>
+        <div class="card card-pad"><p class="text-xs font-semibold uppercase muted">Grup</p><p class="stat mt-1">@Model.Groups</p></div>
+        <div class="card card-pad"><p class="text-xs font-semibold uppercase muted">Manuel derece</p><p class="stat mt-1 @(Model.ManualRecords > 0 ? "text-amber-500" : "")">@Model.ManualRecords</p></div>
+    </div>
+
+    @if (Model.Season is not null)
+    {
+        <div class="card card-pad mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="h2">Sezon @Model.Season.Label</h2>
+                <p class="muted text-sm">
+                    Durum: <strong>@Display.SeasonStatusLabel(Model.Season.Status)</strong> ·
+                    Kilit: @Display.DateTime(Model.Season.LockAt) (TSİ) · @(Model.Locked ? "Tahminler kilitli" : "Tahminler açık") ·
+                    @Model.Season.GamesPerTeam maç
+                </p>
+            </div>
+            <form method="post" asp-page-handler="Sync" x-data="{ busy: false }" x-on:submit="busy = true">
+                <button type="submit" class="btn btn-primary w-full sm:w-auto" x-bind:disabled="busy">
+                    <span x-bind:class="busy && 'animate-spin'">@Icons.Svg("refresh", "size-4")</span>
+                    <span x-text="busy ? 'Senkronize ediliyor…' : 'Şimdi senkronize et'">Şimdi senkronize et</span>
+                </button>
+            </form>
+        </div>
+    }
+
+    <section class="mt-6" aria-labelledby="runs">
+        <h2 id="runs" class="h2 mb-3">Senkronizasyon geçmişi</h2>
+        <div class="card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="table-app min-w-[640px]">
+                    <thead class="bg-zinc-50 dark:bg-ink-850">
+                        <tr><th>Başlangıç (TSİ)</th><th>Kaynak</th><th>Durum</th><th>Süre</th><th>Mesaj</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Runs)
+                        {
+                            var css = r.Status switch
+                            {
+                                SyncRunStatus.Succeeded => "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+                                SyncRunStatus.Failed => "bg-red-500/15 text-red-700 dark:text-red-300",
+                                SyncRunStatus.Skipped => "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+                                _ => "bg-zinc-500/15 muted",
+                            };
+                            var label = r.Status switch
+                            {
+                                SyncRunStatus.Succeeded => "Başarılı",
+                                SyncRunStatus.Failed => "Hata",
+                                SyncRunStatus.Skipped => "Atlandı",
+                                _ => "Çalışıyor",
+                            };
+                            <tr>
+                                <td class="whitespace-nowrap tabular-nums">@Display.ShortDateTime(r.StartedAt)</td>
+                                <td>@(r.Trigger switch { SyncTrigger.Cli => "Cron (CLI)", SyncTrigger.Cron => "Cron (HTTP)", _ => "Admin" })</td>
+                                <td><span class="chip @css">@label</span></td>
+                                <td class="tabular-nums muted">@(r.FinishedAt is { } f ? $"{(f - r.StartedAt).TotalSeconds:0.0} sn" : "–")</td>
+                                <td class="max-w-md text-xs break-words muted">@r.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @if (Model.Runs.Count == 0)
+            {
+                <p class="p-6 text-center muted">Henüz senkronizasyon çalışmadı.</p>
+            }
+        </div>
+    </section>
+</div>

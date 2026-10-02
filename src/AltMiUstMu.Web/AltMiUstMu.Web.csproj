@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>AltMiUstMu.Web</RootNamespace>
+    <AssemblyName>AltMiUstMu.Web</AssemblyName>
+    <UserSecretsId>altmiustmu-web</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AltMiUstMu.Core\AltMiUstMu.Core.csproj" />
+    <ProjectReference Include="..\AltMiUstMu.Infrastructure\AltMiUstMu.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!--
+    Tailwind CSS via the standalone CLI (no Node.js). The binary is downloaded once into /.tools and the CSS is
+    rebuilt whenever a page, helper or the input stylesheet changes (also during `dotnet publish` on Railway).
+    Pass -p:SkipTailwind=true to skip. Use `scripts/tailwind-watch.(sh|ps1)` for watch mode.
+  -->
+  <PropertyGroup>
+    <TailwindVersion>v4.3.3</TailwindVersion>
+    <!-- Forward slashes on purpose: they work on Windows and on Railway's Linux builder. -->
+    <TailwindToolsDir>$(MSBuildThisFileDirectory)../../.tools/</TailwindToolsDir>
+    <TailwindArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">arm64</TailwindArch>
+    <TailwindArch Condition="'$(TailwindArch)' == ''">x64</TailwindArch>
+    <TailwindBinary Condition="$([MSBuild]::IsOSPlatform('Windows'))">tailwindcss-windows-x64.exe</TailwindBinary>
+    <TailwindBinary Condition="$([MSBuild]::IsOSPlatform('Linux'))">tailwindcss-linux-$(TailwindArch)</TailwindBinary>
+    <TailwindBinary Condition="$([MSBuild]::IsOSPlatform('OSX'))">tailwindcss-macos-$(TailwindArch)</TailwindBinary>
+    <TailwindExe>$(TailwindToolsDir)$(TailwindVersion)/$(TailwindBinary)</TailwindExe>
+    <TailwindInput>$(MSBuildProjectDirectory)/Styles/app.css</TailwindInput>
+    <TailwindOutput>$(MSBuildProjectDirectory)/wwwroot/css/app.css</TailwindOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TailwindSources Include="Styles/**/*.css;Pages/**/*.cshtml;Helpers/**/*.cs" />
+  </ItemGroup>
+
+  <Target Name="TailwindDownload" BeforeTargets="TailwindBuild" Condition="'$(SkipTailwind)' != 'true' And !Exists('$(TailwindExe)')">
+    <Message Importance="high" Text="Downloading Tailwind CSS $(TailwindVersion) ($(TailwindBinary))..." />
+    <DownloadFile SourceUrl="https://github.com/tailwindlabs/tailwindcss/releases/download/$(TailwindVersion)/$(TailwindBinary)" DestinationFolder="$(TailwindToolsDir)$(TailwindVersion)" Retries="2" />
+    <Exec Command="chmod +x &quot;$(TailwindExe)&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+  </Target>
+
+  <Target Name="TailwindBuild" BeforeTargets="BeforeBuild" Condition="'$(SkipTailwind)' != 'true'" Inputs="@(TailwindSources)" Outputs="$(TailwindOutput)">
+    <Exec Command="&quot;$(TailwindExe)&quot; -i &quot;$(TailwindInput)&quot; -o &quot;$(TailwindOutput)&quot; --minify" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
+</Project>

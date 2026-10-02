@@ -1,0 +1,169 @@
+@page
+@model AltMiUstMu.Web.Pages.Panel.IndexModel
+@{
+    ViewData["Title"] = "Panel";
+}
+
+@if (Model.Season is null)
+{
+    <div class="container-app py-16 text-center"><p class="h2">Henüz bir sezon yok.</p></div>
+    return;
+}
+
+<div class="container-app py-6 sm:py-8">
+    <p class="eyebrow">@Model.Season.Label · @Display.SeasonStatusLabel(Model.Season.Status)</p>
+    <h1 class="h1 mt-1">Merhaba, @User.DisplayName() 👋</h1>
+
+    @if (Model.PickCount < Model.TeamCount)
+    {
+        <div class="@(Model.Locked ? "alert-error" : "alert-info") mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="font-semibold">@Model.PickCount/@Model.TeamCount takım seçildi</p>
+                <p class="text-sm opacity-80">
+                    @(Model.Locked
+                        ? "Tahminler kilitlendi. Tüm takımları seçmediğin için sıralamada yer almıyorsun."
+                        : "Sıralamaya girmek için tüm takımlara ALT ya da ÜST demelisin.")
+                </p>
+                <div class="mt-2 h-2 w-full max-w-xs overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+                    <div class="h-full rounded-full bg-brand-500" style="width: @Display.Css(Model.PickCount * 100.0 / Math.Max(1, Model.TeamCount))%"></div>
+                </div>
+            </div>
+            @if (!Model.Locked)
+            {
+                <a href="/tahminler" class="btn btn-primary shrink-0">Tahminleri tamamla</a>
+            }
+        </div>
+    }
+
+    @* ---------- Stat tiles ---------- *@
+    <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div class="card card-pad">
+            <p class="text-xs font-semibold tracking-wide uppercase muted">Sıran</p>
+            @if (Model.Score?.Rank is int rank)
+            {
+                var move = Display.Movement(Model.Score.Rank, Model.Score.PreviousRank, out var moveCss);
+                <p class="stat mt-1">@rank<span class="text-base font-semibold muted">/@Model.RankedCount</span></p>
+                <p class="mt-1 text-xs font-semibold @moveCss">@move <span class="font-normal muted">dünden beri</span></p>
+            }
+            else
+            {
+                <p class="stat mt-1 muted">–</p>
+                <p class="mt-1 text-xs muted">@(Model.Locked ? "Sıralamada değilsin" : "Sezon başlayınca")</p>
+            }
+        </div>
+        <div class="card card-pad">
+            <p class="text-xs font-semibold tracking-wide uppercase muted">Projeksiyon</p>
+            <p class="stat mt-1 text-brand-500">@(Model.Score?.ProjectedCorrect ?? 0)</p>
+            <p class="mt-1 text-xs muted">Kesin + gidiyor</p>
+        </div>
+        <div class="card card-pad">
+            <p class="text-xs font-semibold tracking-wide uppercase muted">Kesin</p>
+            <p class="stat mt-1 text-emerald-500">@(Model.Score?.ClinchedCorrect ?? 0)</p>
+            <p class="mt-1 text-xs muted">Matematiksel olarak kazanıldı</p>
+        </div>
+        <div class="card card-pad">
+            <p class="text-xs font-semibold tracking-wide uppercase muted">Kaybedilen</p>
+            <p class="stat mt-1 text-red-500">@(Model.Score?.ClinchedWrong ?? 0)</p>
+            <p class="mt-1 text-xs muted">Riskte: @(Model.Score?.TrendingWrong ?? 0)</p>
+        </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-5">
+        @* ---------- Rank history ---------- *@
+        <section class="card card-pad lg:col-span-3" aria-labelledby="hist">
+            <h2 id="hist" class="h2">Sıralama geçmişi</h2>
+            @if (Model.Chart is null)
+            {
+                <div class="mt-4 grid h-56 place-items-center rounded-xl border border-dashed border-zinc-300 text-center text-sm muted dark:border-ink-700">
+                    <p>Grafik, sezon başladıktan sonraki ilk günlük güncellemeyle oluşacak. 📈</p>
+                </div>
+            }
+            else
+            {
+                <div class="relative mt-4 h-64">
+                    <div class="skeleton absolute inset-0" data-skeleton-for="rankChart"></div>
+                    <canvas id="rankChart" aria-label="Günlük sıralama grafiği" role="img"></canvas>
+                </div>
+            }
+        </section>
+
+        @* ---------- Head to head ---------- *@
+        <section class="lg:col-span-2" aria-labelledby="h2h">
+            <h2 id="h2h" class="h2 mb-3">🎙️ Mutfak'a karşı</h2>
+            <div class="grid gap-3">
+                @foreach (var h in Model.HeadToHeads)
+                {
+                    <div class="card card-pad">
+                        <div class="flex items-center gap-3">
+                            <span class="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-amber-400 font-black text-white">@Display.Initials(h.Pundit.DisplayName)</span>
+                            <div class="min-w-0 flex-1">
+                                <a href="/oyuncu/@Uri.EscapeDataString(h.Pundit.DisplayName)" class="font-bold hover:underline">Sen vs @h.Pundit.ShortName</a>
+                                <p class="text-sm muted">@h.Agree/@h.Compared takımda aynı tahmin</p>
+                            </div>
+                            @if (h.Diff is int diff)
+                            {
+                                <span class="chip @(diff > 0 ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300" : diff < 0 ? "bg-red-500/15 text-red-600 dark:text-red-300" : "bg-zinc-500/15 muted")">
+                                    @(diff > 0 ? $"Öndesin +{diff}" : diff < 0 ? $"Geridesin {diff}" : "Berabere")
+                                </span>
+                            }
+                        </div>
+                        @if (h.Compared > 0)
+                        {
+                            <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-ink-800" aria-hidden="true">
+                                <div class="h-full rounded-full bg-brand-500" style="width: @Display.Css(h.Agree * 100.0 / h.Compared)%"></div>
+                            </div>
+                        }
+                    </div>
+                }
+                @if (Model.HeadToHeads.Count == 0)
+                {
+                    <p class="card card-pad muted">Mutfak tahminleri henüz girilmedi.</p>
+                }
+            </div>
+        </section>
+    </div>
+
+    @* ---------- Teams ---------- *@
+    <section class="mt-8" aria-labelledby="teams">
+        <div class="mb-3 flex items-end justify-between">
+            <h2 id="teams" class="h2">Takım takım tahminlerin</h2>
+            <a href="/tahminler" class="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-400">@(Model.Locked ? "Kartlar" : "Düzenle")</a>
+        </div>
+        <div class="grid gap-3 md:grid-cols-2">
+            @foreach (var row in Model.Rows)
+            {
+                var t = row.Team;
+                <div class="card card-pad">
+                    <div class="flex items-center gap-3">
+                        @Badges.Team(t, "sm")
+                        <div class="min-w-0 flex-1">
+                            <a href="/takim/@t.Abbreviation.ToLowerInvariant()" class="block truncate font-semibold hover:underline">@t.FullName</a>
+                            <p class="text-xs muted">Barem @Display.Line(t.Line) · Tahminin @(row.Side is null ? "–" : Display.SideLabel(row.Side.Value))</p>
+                        </div>
+                        @if (Model.Locked || row.Side is null)
+                        {
+                            @Badges.Status(row.Status)
+                        }
+                        else
+                        {
+                            @Badges.Side(row.Side)
+                        }
+                    </div>
+                    <div class="mt-3"><partial name="_WinsBar" model="t" /></div>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    @if (Model.Chart is not null)
+    {
+        <script src="~/lib/chart.umd.min.js" asp-append-version="true"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                window.renderRankChart('rankChart', @Json.Serialize(new { labels = Model.Chart.Labels, ranks = Model.Chart.Ranks, projected = Model.Chart.Projected, maxRank = Model.Chart.MaxRank }));
+            });
+        </script>
+    }
+}

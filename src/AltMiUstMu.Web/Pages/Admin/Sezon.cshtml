@@ -1,0 +1,40 @@
+@page
+@model AltMiUstMu.Web.Pages.Admin.SezonModel
+@{
+    ViewData["Title"] = "Sezon ayarları";
+}
+<div class="container-app py-6 sm:py-8">
+    <partial name="_AdminNav" />
+    <form method="post" class="card card-pad max-w-2xl space-y-5" novalidate>
+        <h1 class="h2">Sezon ayarları</h1>
+        <partial name="_FormErrors" />
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+                <label asp-for="Input.Label" class="label"></label>
+                <input asp-for="Input.Label" class="input" maxlength="20" />
+                <span asp-validation-for="Input.Label" class="field-error"></span>
+            </div>
+            <div>
+                <label asp-for="Input.GamesPerTeam" class="label"></label>
+                <input asp-for="Input.GamesPerTeam" class="input" type="number" min="1" max="100" />
+                <span asp-validation-for="Input.GamesPerTeam" class="field-error"></span>
+            </div>
+        </div>
+        <div>
+            <label asp-for="Input.LockAtLocal" class="label"></label>
+            <input asp-for="Input.LockAtLocal" class="input" type="datetime-local" step="60" />
+            <p class="mt-1 text-xs muted">İstanbul saatiyle gir; veritabanında UTC saklanır. Bu andan itibaren tahminler kilitlenir ve diğer oyuncuların tahminleri görünür olur.</p>
+            <span asp-validation-for="Input.LockAtLocal" class="field-error"></span>
+        </div>
+        <div>
+            <label asp-for="Input.Status" class="label"></label>
+            <select asp-for="Input.Status" class="input">
+                <option value="@SeasonStatus.Upcoming">Başlamadı (tahminler açık)</option>
+                <option value="@SeasonStatus.Active">Devam ediyor</option>
+                <option value="@SeasonStatus.Finished">Bitti</option>
+            </select>
+            <p class="mt-1 text-xs muted">Durum normalde otomatik değişir: kilit zamanında "Devam ediyor", tüm takımlar sezonu bitirince "Bitti". Tahminler yalnızca durum "Başlamadı" ve kilit zamanı gelmemişken açıktır.</p>
+        </div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+    </form>
+</div>

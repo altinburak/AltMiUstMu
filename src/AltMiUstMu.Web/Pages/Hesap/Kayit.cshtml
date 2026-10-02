@@ -1,0 +1,47 @@
+@page "/hesap/kayit"
+@model AltMiUstMu.Web.Pages.Hesap.KayitModel
+@{
+    ViewData["Title"] = "Kayıt ol";
+    Layout = "_AuthLayout";
+}
+<h1 class="h1 text-center">Oyuna katıl</h1>
+<p class="muted mt-2 text-center">Ücretsiz, bahissiz, sadece eğlence. Kaan ve İnan'ı geçebilecek misin?</p>
+
+<form method="post" class="mt-6 space-y-4" novalidate>
+    <partial name="_FormErrors" />
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div>
+        <label asp-for="Input.DisplayName" class="label"></label>
+        <input asp-for="Input.DisplayName" class="input" autocomplete="nickname" maxlength="20" required aria-describedby="dn-help" />
+        <p id="dn-help" class="mt-1 text-xs muted">3-20 karakter. Liderlik tablosunda bu adla görüneceksin.</p>
+        <span asp-validation-for="Input.DisplayName" class="field-error"></span>
+    </div>
+    <div>
+        <label asp-for="Input.Email" class="label"></label>
+        <input asp-for="Input.Email" class="input" autocomplete="email" inputmode="email" required />
+        <span asp-validation-for="Input.Email" class="field-error"></span>
+    </div>
+    <div>
+        <label asp-for="Input.Password" class="label"></label>
+        <input asp-for="Input.Password" class="input" autocomplete="new-password" required aria-describedby="pw-help" />
+        <p id="pw-help" class="mt-1 text-xs muted">En az 8 karakter, en az bir küçük harf ve bir rakam.</p>
+        <span asp-validation-for="Input.Password" class="field-error"></span>
+    </div>
+    <div>
+        <label asp-for="Input.ConfirmPassword" class="label"></label>
+        <input asp-for="Input.ConfirmPassword" class="input" autocomplete="new-password" required />
+        <span asp-validation-for="Input.ConfirmPassword" class="field-error"></span>
+    </div>
+    <div>
+        <label class="flex items-start gap-3 text-sm">
+            <input asp-for="Input.AcceptRules" type="checkbox" class="mt-0.5 size-5 rounded accent-brand-500" />
+            <span class="muted">Bunun para ödülü olmayan, tamamen eğlence amaçlı bir tahmin oyunu olduğunu anlıyorum.</span>
+        </label>
+        <span asp-validation-for="Input.AcceptRules" class="field-error"></span>
+    </div>
+    <button type="submit" class="btn btn-primary w-full">Kayıt ol</button>
+</form>
+
+@section Below {
+    <p class="mt-6 text-center text-sm muted">Zaten hesabın var mı? <a href="/hesap/giris@(string.IsNullOrEmpty(Model.ReturnUrl) ? "" : "?returnUrl=" + Uri.EscapeDataString(Model.ReturnUrl))" class="font-semibold text-brand-600 hover:underline dark:text-brand-400">Giriş yap</a></p>
+}

@@ -1,0 +1,28 @@
+@page "/hesap/sifremi-unuttum"
+@model AltMiUstMu.Web.Pages.Hesap.SifremiUnuttumModel
+@{
+    ViewData["Title"] = "Şifremi unuttum";
+    Layout = "_AuthLayout";
+}
+<h1 class="h1 text-center">Şifreni mi unuttun?</h1>
+@if (Model.Sent)
+{
+    <div class="alert-success mt-6" role="status">Bu adrese kayıtlı bir hesap varsa şifre sıfırlama bağlantısı gönderdik. Bağlantı 24 saat geçerli.</div>
+    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">Giriş sayfasına dön</a>
+}
+else
+{
+    <p class="muted mt-2 text-center">E-posta adresini yaz, sana şifre sıfırlama bağlantısı gönderelim.</p>
+    <form method="post" class="mt-6 space-y-4" novalidate>
+        <partial name="_FormErrors" />
+        <div>
+            <label asp-for="Email" class="label"></label>
+            <input asp-for="Email" class="input" autocomplete="email" inputmode="email" required autofocus />
+            <span asp-validation-for="Email" class="field-error"></span>
+        </div>
+        <button type="submit" class="btn btn-primary w-full">Sıfırlama bağlantısı gönder</button>
+    </form>
+}
+@section Below {
+    <p class="mt-6 text-center text-sm muted"><a href="/hesap/giris" class="font-semibold text-brand-600 hover:underline dark:text-brand-400">Girişe dön</a></p>
+}

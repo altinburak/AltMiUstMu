@@ -1,0 +1,100 @@
+@model AltMiUstMu.Web.Pages.Liderlik.IndexModel
+<div id="board" class="mt-6">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        @if (Model.Me is { } me)
+        {
+            var move = Display.Movement(me.Score.Rank, me.Score.PreviousRank, out var moveCss);
+            <div class="card mb-4 flex items-center gap-3 border-brand-500/60! bg-brand-500/5 px-4 py-3 ring-1 ring-brand-500/30">
+                <span class="text-xs font-bold tracking-wider text-brand-600 uppercase dark:text-brand-400">Sen</span>
+                <span class="text-2xl font-black tabular-nums">@me.Score.Rank.</span>
+                <span class="text-xs font-semibold @moveCss">@move</span>
+                <a href="/oyuncu/@Uri.EscapeDataString(me.DisplayName)" class="min-w-0 flex-1 truncate font-semibold hover:underline">@me.DisplayName</a>
+                <span class="text-right tabular-nums"><strong class="text-lg">@me.Score.ProjectedCorrect</strong> <span class="text-xs muted">/ kesin @me.Score.ClinchedCorrect</span></span>
+            </div>
+        }
+        else
+        {
+            <div class="alert-info mb-4">Sıralamada değilsin: @Model.MyPickCount/30 takım seçildi. Sıralamaya yalnızca 30 takımın hepsini seçenler girer.</div>
+        }
+    }
+
+    <div class="card relative overflow-hidden">
+        <div class="htmx-indicator absolute inset-x-0 top-0 h-0.5 animate-pulse bg-brand-500" aria-hidden="true"></div>
+        @if (Model.Rows.Count == 0)
+        {
+            <div class="p-10 text-center">
+                <p class="h2">Sonuç yok</p>
+                <p class="mt-1 muted">@(string.IsNullOrWhiteSpace(Model.Query) ? "Puanlar ilk günlük güncellemeden sonra burada görünecek." : $"\"{Model.Query}\" ile eşleşen oyuncu bulunamadı.")</p>
+            </div>
+        }
+        else
+        {
+            <table class="table-app">
+                <caption class="sr-only">Liderlik tablosu, sayfa @Model.PageNumber / @Model.PageCount</caption>
+                <thead class="bg-zinc-50 dark:bg-ink-850">
+                    <tr>
+                        <th scope="col" class="w-14 text-center">#</th>
+                        <th scope="col">Oyuncu</th>
+                        <th scope="col" class="text-right">Proj.</th>
+                        <th scope="col" class="hidden text-right sm:table-cell">Kesin</th>
+                        <th scope="col" class="hidden text-right md:table-cell">Kaybedilen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        var isMe = row.UserId == Model.MyId;
+                        var move = Display.Movement(row.Score.Rank, row.Score.PreviousRank, out var moveCss);
+                        <tr class="@(isMe ? "bg-brand-500/10" : row.IsPundit ? "bg-amber-500/5" : "")">
+                            <td class="text-center">
+                                <div class="text-base font-black tabular-nums @(row.Score.Rank <= 3 ? "text-brand-500" : "")">@row.Score.Rank</div>
+                                <div class="text-[10px] font-semibold @moveCss" aria-label="Dünkü sıraya göre değişim">@move</div>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <span class="hidden size-8 shrink-0 place-items-center rounded-full text-xs font-black text-white sm:grid @(row.IsPundit ? "bg-gradient-to-br from-brand-500 to-amber-400" : "bg-zinc-400 dark:bg-ink-600")">@Display.Initials(row.DisplayName)</span>
+                                    <a href="/oyuncu/@Uri.EscapeDataString(row.DisplayName)" class="truncate font-semibold hover:underline">@row.DisplayName</a>
+                                    @if (row.IsPundit)
+                                    {
+                                        @Badges.Pundit()
+                                    }
+                                    @if (isMe)
+                                    {
+                                        <span class="chip bg-brand-500 text-white">Sen</span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="text-right text-base font-bold tabular-nums">@row.Score.ProjectedCorrect</td>
+                            <td class="hidden text-right tabular-nums text-emerald-600 sm:table-cell dark:text-emerald-400">@row.Score.ClinchedCorrect</td>
+                            <td class="hidden text-right tabular-nums text-red-500 md:table-cell">@row.Score.ClinchedWrong</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @if (Model.PageCount > 1)
+    {
+        <nav class="mt-4 flex items-center justify-between gap-2" aria-label="Sayfalama">
+            @if (Model.PageNumber > 1)
+            {
+                <a href="@Model.PageUrl(Model.PageNumber - 1)" hx-get="@Model.PageUrl(Model.PageNumber - 1)" hx-target="#board" hx-push-url="true" class="btn btn-secondary btn-sm" rel="prev">← Önceki</a>
+            }
+            else
+            {
+                <span></span>
+            }
+            <span class="text-sm muted tabular-nums">Sayfa @Model.PageNumber / @Model.PageCount · @Model.Total oyuncu</span>
+            @if (Model.PageNumber < Model.PageCount)
+            {
+                <a href="@Model.PageUrl(Model.PageNumber + 1)" hx-get="@Model.PageUrl(Model.PageNumber + 1)" hx-target="#board" hx-push-url="true" class="btn btn-secondary btn-sm" rel="next">Sonraki →</a>
+            }
+            else
+            {
+                <span></span>
+            }
+        </nav>
+    }
+</div>

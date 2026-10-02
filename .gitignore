@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.vscode/
+.idea/
+*.user
+.tools/
+TestResults/
+src/AltMiUstMu.Web/wwwroot/css/app.css
+.env
+*.swp

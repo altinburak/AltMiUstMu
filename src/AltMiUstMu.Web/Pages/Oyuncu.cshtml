@@ -1,0 +1,95 @@
+@page "/oyuncu/{name}"
+@model OyuncuModel
+@{
+    ViewData["Title"] = Model.DisplayName;
+    ViewData["OgType"] = "profile";
+    ViewData["Description"] = Model.Score?.Rank is int r
+        ? $"{Model.DisplayName} Alt mı Üst mü? liderlik tablosunda {r}. sırada: projeksiyon {Model.Score.ProjectedCorrect}, kesin {Model.Score.ClinchedCorrect} doğru tahmin."
+        : $"{Model.DisplayName} Alt mı Üst mü? NBA sezon tahmin oyununda. Sen de katıl!";
+}
+<div class="container-app py-6 sm:py-8">
+    <div class="flex items-center gap-4">
+        <span class="grid size-16 shrink-0 place-items-center rounded-2xl text-xl font-black text-white @(Model.IsPundit ? "bg-gradient-to-br from-brand-500 to-amber-400" : "bg-zinc-500 dark:bg-ink-600")">@Display.Initials(Model.DisplayName)</span>
+        <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+                <h1 class="h1 truncate">@Model.DisplayName</h1>
+                @if (Model.IsPundit)
+                {
+                    @Badges.Pundit()
+                }
+            </div>
+            <p class="muted text-sm">@(Model.IsPundit ? "Amerikan Mutfak sunucusu" : $"Katılım: {Display.Date(DateOnly.FromDateTime(Model.JoinedAt))} {Model.JoinedAt.Year}")</p>
+        </div>
+        <div class="ml-auto hidden sm:block" x-data="copyText(window.location.href)">
+            <button type="button" class="btn btn-secondary" x-on:click="share('@Model.DisplayName – Alt mı Üst mü?')">@Icons.Svg("share", "size-4") Paylaş</button>
+        </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-3 gap-3">
+        <div class="card card-pad">
+            <p class="text-xs font-semibold uppercase muted">Sıra</p>
+            <p class="stat mt-1">@(Model.Score?.Rank?.ToString() ?? "–")<span class="text-base font-semibold muted">@(Model.Score?.Rank is null ? "" : $"/{Model.RankedCount}")</span></p>
+        </div>
+        <div class="card card-pad">
+            <p class="text-xs font-semibold uppercase muted">Projeksiyon</p>
+            <p class="stat mt-1 text-brand-500">@(Model.Score?.ProjectedCorrect ?? 0)</p>
+        </div>
+        <div class="card card-pad">
+            <p class="text-xs font-semibold uppercase muted">Kesin</p>
+            <p class="stat mt-1 text-emerald-500">@(Model.Score?.ClinchedCorrect ?? 0)</p>
+        </div>
+    </div>
+
+    @if (Model.Chart is not null)
+    {
+        <section class="card card-pad mt-6" aria-labelledby="hist">
+            <h2 id="hist" class="h2">Sıralama geçmişi</h2>
+            <div class="relative mt-4 h-56">
+                <div class="skeleton absolute inset-0" data-skeleton-for="rankChart"></div>
+                <canvas id="rankChart" role="img" aria-label="@Model.DisplayName sıralama grafiği"></canvas>
+            </div>
+        </section>
+    }
+
+    <section class="mt-6" aria-labelledby="picks">
+        <h2 id="picks" class="h2 mb-3">Tahminler <span class="text-sm font-medium muted">(@Model.PickCount/30)</span></h2>
+        @if (!Model.PicksVisible)
+        {
+            <div class="card card-pad flex items-center gap-3 muted">
+                @Icons.Svg("lock", "size-5 shrink-0")
+                <p>Kopya çekilmesin diye tahminler sezon başlayana (@Display.DateTime(Model.Season.LockAt)) kadar gizli.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach (var row in Model.Rows)
+                {
+                    var t = row.Team;
+                    <a href="/takim/@t.Abbreviation.ToLowerInvariant()" class="card flex items-center gap-3 px-3 py-2.5 transition hover:border-brand-400">
+                        @Badges.Team(t, "xs")
+                        <span class="min-w-0 flex-1 truncate text-sm font-semibold">@t.FullName</span>
+                        <span class="text-xs muted tabular-nums">@Display.Line(t.Line)</span>
+                        @Badges.Side(row.Side)
+                        @if (Model.Locked && row.Side is not null)
+                        {
+                            @Badges.Status(row.Status, "hidden xl:inline-flex")
+                        }
+                    </a>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    @if (Model.Chart is not null)
+    {
+        <script src="~/lib/chart.umd.min.js" asp-append-version="true"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                window.renderRankChart('rankChart', @Json.Serialize(new { labels = Model.Chart.Labels, ranks = Model.Chart.Ranks, maxRank = Model.Chart.MaxRank }));
+            });
+        </script>
+    }
+}

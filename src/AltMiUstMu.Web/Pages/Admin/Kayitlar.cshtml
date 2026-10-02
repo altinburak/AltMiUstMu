@@ -1,0 +1,55 @@
+@page
+@model AltMiUstMu.Web.Pages.Admin.KayitlarModel
+@{
+    ViewData["Title"] = "Dereceler";
+}
+<div class="container-app py-6 sm:py-8">
+    <partial name="_AdminNav" />
+    <h1 class="h2">Takım dereceleri</h1>
+    <p class="mb-4 text-sm muted">Dereceler her gün ESPN'den otomatik gelir. Bir takımı elle düzeltirsen "Manuel" olarak işaretlenir ve override'ı kaldırana kadar senkronizasyon onu değiştirmez.</p>
+
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table-app min-w-[680px]">
+                <thead class="bg-zinc-50 dark:bg-ink-850">
+                    <tr><th>Takım</th><th>Kaynak</th><th>Güncelleme (TSİ)</th><th class="text-right">G</th><th class="text-right">M</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.Teams)
+                    {
+                        var formId = $"rec-{t.Id}";
+                        <tr class="@(t.Source == RecordSource.Manual ? "bg-amber-500/5" : "")">
+                            <td><span class="flex items-center gap-2">@Badges.Team(t, "xs") <span class="font-semibold">@t.FullName</span></span></td>
+                            <td>
+                                @if (t.Source == RecordSource.Manual)
+                                {
+                                    <span class="chip bg-amber-500/15 text-amber-700 dark:text-amber-300">Manuel</span>
+                                }
+                                else
+                                {
+                                    <span class="chip bg-zinc-500/10 muted">API</span>
+                                }
+                            </td>
+                            <td class="text-xs whitespace-nowrap muted">@(t.RecordUpdatedAt is { } u ? Display.ShortDateTime(u) : "–")</td>
+                            <td class="w-20"><input form="@formId" name="wins" type="number" min="0" max="@t.GamesPerTeam" value="@t.Wins" class="input py-1.5 text-right tabular-nums" aria-label="@t.FullName galibiyet" /></td>
+                            <td class="w-20"><input form="@formId" name="losses" type="number" min="0" max="@t.GamesPerTeam" value="@t.Losses" class="input py-1.5 text-right tabular-nums" aria-label="@t.FullName mağlubiyet" /></td>
+                            <td class="text-right whitespace-nowrap">
+                                <form id="@formId" method="post" asp-page-handler="Set" class="inline">
+                                    <input type="hidden" name="teamId" value="@t.Id" />
+                                    <button type="submit" class="btn btn-secondary btn-sm">Manuel kaydet</button>
+                                </form>
+                                @if (t.Source == RecordSource.Manual)
+                                {
+                                    <form method="post" asp-page-handler="Clear" class="inline">
+                                        <input type="hidden" name="teamId" value="@t.Id" />
+                                        <button type="submit" class="btn btn-ghost btn-sm text-amber-600 dark:text-amber-400">Override'ı kaldır</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

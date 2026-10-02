@@ -1,0 +1,35 @@
+@page "/hesap/sifre-sifirla"
+@model AltMiUstMu.Web.Pages.Hesap.SifreSifirlaModel
+@{
+    ViewData["Title"] = "Şifre sıfırla";
+    Layout = "_AuthLayout";
+}
+<h1 class="h1 text-center">Yeni şifre belirle</h1>
+@if (Model.Done)
+{
+    <div class="alert-success mt-6" role="status">Şifren güncellendi. Artık yeni şifrenle giriş yapabilirsin.</div>
+    <a href="/hesap/giris" class="btn btn-primary mt-4 w-full">Giriş yap</a>
+}
+else
+{
+    <form method="post" class="mt-6 space-y-4" novalidate>
+        <partial name="_FormErrors" />
+        <input type="hidden" asp-for="Input.Code" />
+        <div>
+            <label asp-for="Input.Email" class="label"></label>
+            <input asp-for="Input.Email" class="input" autocomplete="username" inputmode="email" required />
+            <span asp-validation-for="Input.Email" class="field-error"></span>
+        </div>
+        <div>
+            <label asp-for="Input.Password" class="label"></label>
+            <input asp-for="Input.Password" class="input" autocomplete="new-password" required />
+            <span asp-validation-for="Input.Password" class="field-error"></span>
+        </div>
+        <div>
+            <label asp-for="Input.ConfirmPassword" class="label"></label>
+            <input asp-for="Input.ConfirmPassword" class="input" autocomplete="new-password" required />
+            <span asp-validation-for="Input.ConfirmPassword" class="field-error"></span>
+        </div>
+        <button type="submit" class="btn btn-primary w-full">Şifremi güncelle</button>
+    </form>
+}

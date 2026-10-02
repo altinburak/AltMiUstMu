@@ -1,0 +1,164 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@inject AltMiUstMu.Web.Infrastructure.AccountEmails Links
+@{
+    const string appName = "Alt mı Üst mü?";
+    var title = ViewData["Title"] as string;
+    var fullTitle = string.IsNullOrEmpty(title) ? $"{appName} – NBA sezon tahmin oyunu" : $"{title} · {appName}";
+    var description = ViewData["Description"] as string
+        ?? "30 NBA takımı için sezon galibiyet baremlerini tahmin et: ALT mı, ÜST mü? Kaan ve İnan'ı geçebilecek misin? Ücretsiz, bahissiz, tamamen eğlence.";
+    var ogImage = Links.Absolute((ViewData["OgImage"] as string) ?? "/img/og.png");
+    var canonical = Links.Absolute(Context.Request.Path + Context.Request.QueryString);
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var isAdmin = signedIn && User.IsInRole("Admin");
+    var path = Context.Request.Path.Value?.ToLowerInvariant() ?? "/";
+    string Active(string prefix) => (prefix == "/" ? path == "/" : path.StartsWith(prefix, StringComparison.Ordinal)) ? "nav-link-active" : "";
+    string TabActive(string prefix) => (prefix == "/" ? path == "/" : path.StartsWith(prefix, StringComparison.Ordinal)) ? "tab-link-active" : "";
+    string? hxHeaders = null;
+    if (signedIn)
+    {
+        var tokens = Antiforgery.GetAndStoreTokens(Context);
+        hxHeaders = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string?> { ["RequestVerificationToken"] = tokens.RequestToken });
+    }
+}
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>@fullTitle</title>
+    <meta name="description" content="@description" />
+    <meta name="theme-color" content="#07090d" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <link rel="canonical" href="@canonical" />
+
+    <meta property="og:site_name" content="@appName" />
+    <meta property="og:type" content="@(ViewData["OgType"] as string ?? "website")" />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:title" content="@(title ?? appName)" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:url" content="@canonical" />
+    <meta property="og:image" content="@ogImage" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="@appName – NBA sezon tahmin oyunu" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@(title ?? appName)" />
+    <meta name="twitter:description" content="@description" />
+    <meta name="twitter:image" content="@ogImage" />
+
+    <script>
+        try { if (localStorage.getItem('altmiustmu-theme') === 'light') document.documentElement.classList.remove('dark'); } catch (e) { }
+    </script>
+    <link rel="icon" href="~/img/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="~/img/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    <script src="~/lib/htmx.min.js" asp-append-version="true" defer></script>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+    <script src="~/lib/alpine.min.js" asp-append-version="true" defer></script>
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body class="flex min-h-dvh flex-col" hx-headers="@hxHeaders">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white">İçeriğe geç</a>
+
+    <header class="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/85 backdrop-blur-lg dark:border-ink-800 dark:bg-ink-950/85">
+        <div class="container-app flex h-16 items-center gap-3">
+            <a href="/" class="group flex items-center gap-2 rounded-lg font-black tracking-tight" aria-label="@appName ana sayfa">
+                @Icons.Ball("size-8 transition-transform duration-300 group-hover:rotate-45")
+                <span class="text-lg leading-none sm:text-xl">Alt mı <span class="text-brand-500">Üst</span> mü?</span>
+            </a>
+
+            <nav class="ml-6 hidden items-center gap-1 md:flex" aria-label="Ana menü">
+                <a href="/tahminler" class="nav-link @Active("/tahminler")">Tahminlerim</a>
+                <a href="/panel" class="nav-link @Active("/panel")">Panel</a>
+                <a href="/liderlik" class="nav-link @Active("/liderlik")">Liderlik</a>
+                <a href="/takimlar" class="nav-link @Active("/takim")">Takımlar</a>
+                <a href="/gruplar" class="nav-link @Active("/gruplar")">Gruplar</a>
+            </nav>
+
+            <div class="ml-auto flex items-center gap-1.5">
+                <button type="button" x-data="themeToggle" x-on:click="toggle()" class="btn-ghost btn min-h-10! px-2.5!" x-bind:aria-label="dark ? 'Açık temaya geç' : 'Koyu temaya geç'" aria-label="Temayı değiştir">
+                    <span x-show="dark">@Icons.Svg("sun")</span>
+                    <span x-show="!dark" x-cloak>@Icons.Svg("moon")</span>
+                </button>
+
+                @if (signedIn)
+                {
+                    <div class="relative" x-data="{ open: false }" x-on:keydown.escape.window="open = false" x-on:click.outside="open = false">
+                        <button type="button" class="flex items-center gap-2 rounded-full border border-zinc-200 py-1 pr-2 pl-1 text-sm font-semibold transition hover:bg-zinc-100 dark:border-ink-700 dark:hover:bg-ink-800"
+                                x-on:click="open = !open" x-bind:aria-expanded="open" aria-haspopup="menu" aria-label="Hesap menüsü">
+                            <span class="grid size-8 place-items-center rounded-full bg-brand-500 text-xs font-black text-white">@Display.Initials(User.DisplayName())</span>
+                            <span class="hidden max-w-32 truncate sm:inline">@User.DisplayName()</span>
+                            @Icons.Svg("chevron-down", "size-4 text-zinc-400")
+                        </button>
+                        <div x-show="open" x-cloak x-transition.origin.top.right role="menu"
+                             class="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl dark:border-ink-700 dark:bg-ink-900">
+                            <a role="menuitem" href="/oyuncu/@Uri.EscapeDataString(User.DisplayName())" class="nav-link flex items-center gap-2">@Icons.Svg("user", "size-4") Profilim</a>
+                            <a role="menuitem" href="/hesap/ayarlar" class="nav-link flex items-center gap-2">@Icons.Svg("settings", "size-4") Hesap ayarları</a>
+                            @if (isAdmin)
+                            {
+                                <a role="menuitem" href="/admin" class="nav-link flex items-center gap-2 text-brand-600 dark:text-brand-400">@Icons.Svg("shield", "size-4") Yönetim</a>
+                            }
+                            <form method="post" action="/hesap/cikis" class="border-t border-zinc-100 pt-1 mt-1 dark:border-ink-800">
+                                @Html.AntiForgeryToken()
+                                <button role="menuitem" type="submit" class="nav-link flex w-full items-center gap-2 text-left">@Icons.Svg("logout", "size-4") Çıkış yap</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <a href="/hesap/giris" class="btn-ghost btn hidden sm:inline-flex">Giriş yap</a>
+                    <a href="/hesap/kayit" class="btn btn-primary">Kayıt ol</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="flex-1 pb-28 md:pb-12" tabindex="-1">
+        @if (TempData["Toast"] is string toast)
+        {
+            <div class="container-app pt-4">
+                <div class="alert-success animate-fade-in" role="status">@toast</div>
+            </div>
+        }
+        @if (TempData["ToastError"] is string toastError)
+        {
+            <div class="container-app pt-4">
+                <div class="alert-error animate-fade-in" role="alert">@toastError</div>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="hidden border-t border-zinc-200 py-8 text-sm md:block dark:border-ink-800">
+        <div class="container-app flex flex-col gap-2 muted sm:flex-row sm:items-center sm:justify-between">
+            <p><strong class="text-zinc-700 dark:text-zinc-300">@appName</strong> · Amerikan Mutfak'tan ilham alan, tamamen ücretsiz bir tahmin oyunu. Para yok, bahis yok.</p>
+            <p>NBA ve takımlarıyla resmi bir bağlantısı yoktur.</p>
+        </div>
+    </footer>
+
+    <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden dark:border-ink-800 dark:bg-ink-950/95" aria-label="Alt menü">
+        <div class="flex">
+            <a href="/" class="tab-link @TabActive("/")">@Icons.Svg("home", "size-6")<span>Ana sayfa</span></a>
+            <a href="/tahminler" class="tab-link @TabActive("/tahminler")">@Icons.Svg("picks", "size-6")<span>Tahminler</span></a>
+            <a href="/panel" class="tab-link @TabActive("/panel")">@Icons.Svg("chart", "size-6")<span>Panel</span></a>
+            <a href="/liderlik" class="tab-link @TabActive("/liderlik")">@Icons.Svg("trophy", "size-6")<span>Liderlik</span></a>
+            <a href="/gruplar" class="tab-link @TabActive("/gruplar")">@Icons.Svg("users", "size-6")<span>Gruplar</span></a>
+        </div>
+    </nav>
+
+    <div x-data="toasts" x-on:toast.window="push($event.detail)" class="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex flex-col items-center gap-2 px-4 md:bottom-6" aria-live="polite">
+        <template x-for="t in items" x-bind:key="t.id">
+            <div x-transition class="pointer-events-auto flex max-w-sm items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-xl"
+                 x-bind:class="t.type === 'error' ? 'bg-red-600 text-white' : 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'">
+                <span x-text="t.message"></span>
+            </div>
+        </template>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

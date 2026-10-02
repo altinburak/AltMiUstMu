@@ -1,0 +1,38 @@
+@page "/gruplar/katil/{code}"
+@model AltMiUstMu.Web.Pages.Gruplar.KatilModel
+@{
+    ViewData["Title"] = $"{Model.GroupName} grubuna davetlisin";
+    ViewData["Description"] = $"{Model.OwnerName} seni Alt mı Üst mü? NBA sezon tahmin oyununda '{Model.GroupName}' grubuna davet ediyor. Kaan ve İnan'ı geçebilecek misin?";
+    Layout = "_AuthLayout";
+    var returnUrl = $"/gruplar/katil/{Model.Code}";
+}
+<div class="text-center">
+    <div class="mx-auto grid size-16 place-items-center rounded-2xl bg-brand-500/15 text-2xl font-black text-brand-600 dark:text-brand-400">@Display.Initials(Model.GroupName)</div>
+    <p class="eyebrow mt-4">Grup daveti</p>
+    <h1 class="h1 mt-1">@Model.GroupName</h1>
+    <p class="muted mt-2"><strong class="text-zinc-800 dark:text-zinc-200">@Model.OwnerName</strong> seni bu gruba davet ediyor · @Model.MemberCount üye</p>
+
+    @if (Model.Error is not null)
+    {
+        <div class="alert-error mt-5" role="alert">@Model.Error</div>
+    }
+
+    @if (Model.AlreadyMember)
+    {
+        <a href="/gruplar/@Model.Slug" class="btn btn-primary mt-6 w-full">Zaten üyesin – gruba git</a>
+    }
+    else if (User.Identity?.IsAuthenticated == true)
+    {
+        <form method="post" class="mt-6">
+            <button type="submit" class="btn btn-primary w-full">Gruba katıl</button>
+        </form>
+    }
+    else
+    {
+        <div class="mt-6 grid gap-3">
+            <a href="/hesap/kayit?returnUrl=@Uri.EscapeDataString(returnUrl)" class="btn btn-primary w-full">Kayıt ol ve katıl</a>
+            <a href="/hesap/giris?returnUrl=@Uri.EscapeDataString(returnUrl)" class="btn btn-secondary w-full">Zaten hesabım var</a>
+        </div>
+        <p class="mt-4 text-xs muted">Kayıt olduktan sonra bu bağlantıyı tekrar açarak gruba katılabilirsin.</p>
+    }
+</div>

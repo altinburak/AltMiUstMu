@@ -1,0 +1,65 @@
+@page
+@model AltMiUstMu.Web.Pages.Gruplar.IndexModel
+@{
+    ViewData["Title"] = "Gruplar";
+}
+<div class="container-app py-6 sm:py-8">
+    <p class="eyebrow">Arkadaş ligi</p>
+    <h1 class="h1 mt-1">Gruplar</h1>
+    <p class="muted mt-1">Arkadaşlarınla, ofisle ya da kendi topluluğunla kendi liderlik tablonu kur.</p>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-3">
+        <section class="lg:col-span-2" aria-labelledby="mine">
+            <h2 id="mine" class="h2 mb-3">Gruplarım</h2>
+            @if (Model.Groups.Count == 0)
+            {
+                <div class="card card-pad text-center sm:p-10">
+                    <div class="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-500/15 text-3xl" aria-hidden="true">👥</div>
+                    <p class="h2 mt-4">Henüz bir grubun yok</p>
+                    <p class="mt-1 muted">Yeni bir grup kur ya da arkadaşının gönderdiği davet koduyla katıl.</p>
+                </div>
+            }
+            else
+            {
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach (var g in Model.Groups)
+                    {
+                        <a href="/gruplar/@g.Slug" class="card card-pad flex items-center gap-3 transition hover:border-brand-400">
+                            <span class="grid size-11 place-items-center rounded-xl bg-brand-500/15 text-lg font-black text-brand-600 dark:text-brand-400">@Display.Initials(g.Name)</span>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate font-bold">@g.Name</p>
+                                <p class="text-sm muted">@g.Members üye @(g.IsOwner ? "· sahibi sensin" : "")</p>
+                            </div>
+                            @if (g.MyGroupRank is int r)
+                            {
+                                <span class="text-right"><span class="block text-xl font-black tabular-nums">@r.</span><span class="text-xs muted">sıran</span></span>
+                            }
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+
+        <div class="space-y-4">
+            <form method="post" asp-page-handler="Create" class="card card-pad space-y-3" novalidate>
+                <h2 class="h2 flex items-center gap-2">@Icons.Svg("plus", "size-5 text-brand-500") Grup kur</h2>
+                <div>
+                    <label for="NewName" class="label">Grup adı</label>
+                    <input asp-for="NewName" class="input" maxlength="40" placeholder="Örn. Ofis Ligi" required />
+                    <span asp-validation-for="NewName" class="field-error"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-full">Kur</button>
+            </form>
+
+            <form method="post" asp-page-handler="Join" class="card card-pad space-y-3" novalidate>
+                <h2 class="h2">Davet koduyla katıl</h2>
+                <div>
+                    <label for="InviteCode" class="label">Davet kodu veya bağlantısı</label>
+                    <input asp-for="InviteCode" class="input font-mono uppercase" autocomplete="off" autocapitalize="characters" placeholder="ABCD2345" required />
+                    <span asp-validation-for="InviteCode" class="field-error"></span>
+                </div>
+                <button type="submit" class="btn btn-secondary w-full">Katıl</button>
+            </form>
+        </div>
+    </div>
+</div>

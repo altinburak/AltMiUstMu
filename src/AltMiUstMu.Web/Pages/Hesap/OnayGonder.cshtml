@@ -1,0 +1,25 @@
+@page "/hesap/onay-gonder"
+@model AltMiUstMu.Web.Pages.Hesap.OnayGonderModel
+@{
+    ViewData["Title"] = "Doğrulama e-postası";
+    Layout = "_AuthLayout";
+}
+<h1 class="h1 text-center">Doğrulama e-postası</h1>
+@if (Model.Sent)
+{
+    <div class="alert-success mt-6" role="status">Bu adresle doğrulanmamış bir hesap varsa yeni bir bağlantı gönderdik. Gelen kutunu kontrol et.</div>
+    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">Giriş sayfasına dön</a>
+}
+else
+{
+    <p class="muted mt-2 text-center">E-posta adresini yaz, doğrulama bağlantısını yeniden gönderelim.</p>
+    <form method="post" class="mt-6 space-y-4" novalidate>
+        <partial name="_FormErrors" />
+        <div>
+            <label asp-for="Email" class="label"></label>
+            <input asp-for="Email" class="input" autocomplete="email" inputmode="email" required />
+            <span asp-validation-for="Email" class="field-error"></span>
+        </div>
+        <button type="submit" class="btn btn-primary w-full">Tekrar gönder</button>
+    </form>
+}
