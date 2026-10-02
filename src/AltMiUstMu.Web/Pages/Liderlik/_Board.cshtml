@@ -6,16 +6,16 @@
         {
             var move = Display.Movement(me.Score.Rank, me.Score.PreviousRank, out var moveCss);
             <div class="card mb-4 flex items-center gap-3 border-brand-500/60! bg-brand-500/5 px-4 py-3 ring-1 ring-brand-500/30">
-                <span class="text-xs font-bold tracking-wider text-brand-600 uppercase dark:text-brand-400">Sen</span>
+                <span class="text-xs font-bold tracking-wider text-brand-600 uppercase dark:text-brand-400">@T("Sen", "You")</span>
                 <span class="text-2xl font-black tabular-nums">@me.Score.Rank.</span>
                 <span class="text-xs font-semibold @moveCss">@move</span>
                 <a href="/oyuncu/@Uri.EscapeDataString(me.DisplayName)" class="min-w-0 flex-1 truncate font-semibold hover:underline">@me.DisplayName</a>
-                <span class="text-right tabular-nums"><strong class="text-lg">@me.Score.ProjectedCorrect</strong> <span class="text-xs muted">/ kesin @me.Score.ClinchedCorrect</span></span>
+                <span class="text-right tabular-nums"><strong class="text-lg">@me.Score.ProjectedCorrect</strong> <span class="text-xs muted">/ @T("kesin", "clinched") @me.Score.ClinchedCorrect</span></span>
             </div>
         }
         else
         {
-            <div class="alert-info mb-4">Sıralamada değilsin: @Model.MyPickCount/30 takım seçildi. Sıralamaya yalnızca 30 takımın hepsini seçenler girer.</div>
+            <div class="alert-info mb-4">@T($"Sıralamada değilsin: {Model.MyPickCount}/30 takım seçildi. Sıralamaya yalnızca 30 takımın hepsini seçenler girer.", $"You're not ranked: {Model.MyPickCount}/30 teams picked. Only players who pick all 30 teams are ranked.")</div>
         }
     }
 
@@ -24,21 +24,21 @@
         @if (Model.Rows.Count == 0)
         {
             <div class="p-10 text-center">
-                <p class="h2">Sonuç yok</p>
-                <p class="mt-1 muted">@(string.IsNullOrWhiteSpace(Model.Query) ? "Puanlar ilk günlük güncellemeden sonra burada görünecek." : $"\"{Model.Query}\" ile eşleşen oyuncu bulunamadı.")</p>
+                <p class="h2">@T("Sonuç yok", "No results")</p>
+                <p class="mt-1 muted">@(string.IsNullOrWhiteSpace(Model.Query) ? T("Puanlar ilk günlük güncellemeden sonra burada görünecek.", "Scores will show up here after the first daily update.") : T($"\"{Model.Query}\" ile eşleşen oyuncu bulunamadı.", $"No players match \"{Model.Query}\"."))</p>
             </div>
         }
         else
         {
             <table class="table-app">
-                <caption class="sr-only">Liderlik tablosu, sayfa @Model.PageNumber / @Model.PageCount</caption>
+                <caption class="sr-only">@T("Liderlik tablosu, sayfa", "Leaderboard, page") @Model.PageNumber / @Model.PageCount</caption>
                 <thead class="bg-zinc-50 dark:bg-ink-850">
                     <tr>
                         <th scope="col" class="w-14 text-center">#</th>
-                        <th scope="col">Oyuncu</th>
-                        <th scope="col" class="text-right">Proj.</th>
-                        <th scope="col" class="hidden text-right sm:table-cell">Kesin</th>
-                        <th scope="col" class="hidden text-right md:table-cell">Kaybedilen</th>
+                        <th scope="col">@T("Oyuncu", "Player")</th>
+                        <th scope="col" class="text-right">@T("Proj.", "Proj.")</th>
+                        <th scope="col" class="hidden text-right sm:table-cell">@T("Kesin", "Clinched")</th>
+                        <th scope="col" class="hidden text-right md:table-cell">@T("Kaybedilen", "Lost")</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,7 +49,7 @@
                         <tr class="@(isMe ? "bg-brand-500/10" : row.IsPundit ? "bg-amber-500/5" : "")">
                             <td class="text-center">
                                 <div class="text-base font-black tabular-nums @(row.Score.Rank <= 3 ? "text-brand-500" : "")">@row.Score.Rank</div>
-                                <div class="text-[10px] font-semibold @moveCss" aria-label="Dünkü sıraya göre değişim">@move</div>
+                                <div class="text-[10px] font-semibold @moveCss" aria-label="@T("Dünkü sıraya göre değişim", "Change since yesterday")">@move</div>
                             </td>
                             <td>
                                 <div class="flex items-center gap-2">
@@ -61,7 +61,7 @@
                                     }
                                     @if (isMe)
                                     {
-                                        <span class="chip bg-brand-500 text-white">Sen</span>
+                                        <span class="chip bg-brand-500 text-white">@T("Sen", "You")</span>
                                     }
                                 </div>
                             </td>
@@ -77,19 +77,19 @@
 
     @if (Model.PageCount > 1)
     {
-        <nav class="mt-4 flex items-center justify-between gap-2" aria-label="Sayfalama">
+        <nav class="mt-4 flex items-center justify-between gap-2" aria-label="@T("Sayfalama", "Pagination")">
             @if (Model.PageNumber > 1)
             {
-                <a href="@Model.PageUrl(Model.PageNumber - 1)" hx-get="@Model.PageUrl(Model.PageNumber - 1)" hx-target="#board" hx-push-url="true" class="btn btn-secondary btn-sm" rel="prev">← Önceki</a>
+                <a href="@Model.PageUrl(Model.PageNumber - 1)" hx-get="@Model.PageUrl(Model.PageNumber - 1)" hx-target="#board" hx-push-url="true" class="btn btn-secondary btn-sm" rel="prev">← @T("Önceki", "Previous")</a>
             }
             else
             {
                 <span></span>
             }
-            <span class="text-sm muted tabular-nums">Sayfa @Model.PageNumber / @Model.PageCount · @Model.Total oyuncu</span>
+            <span class="text-sm muted tabular-nums">@T("Sayfa", "Page") @Model.PageNumber / @Model.PageCount · @Model.Total @T("oyuncu", "players")</span>
             @if (Model.PageNumber < Model.PageCount)
             {
-                <a href="@Model.PageUrl(Model.PageNumber + 1)" hx-get="@Model.PageUrl(Model.PageNumber + 1)" hx-target="#board" hx-push-url="true" class="btn btn-secondary btn-sm" rel="next">Sonraki →</a>
+                <a href="@Model.PageUrl(Model.PageNumber + 1)" hx-get="@Model.PageUrl(Model.PageNumber + 1)" hx-target="#board" hx-push-url="true" class="btn btn-secondary btn-sm" rel="next">@T("Sonraki", "Next") →</a>
             }
             else
             {

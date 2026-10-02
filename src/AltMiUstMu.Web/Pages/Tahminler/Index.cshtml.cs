@@ -37,10 +37,10 @@ public class IndexModel(SeasonService seasons, GameQueries queries, PickService 
 
         var message = result switch
         {
-            PickResult.Locked => "Tahminler kilitlendi; sezon başladı.",
-            PickResult.InvalidTeam => "Takım bulunamadı.",
-            PickResult.NoSeason => "Aktif sezon yok.",
-            PickResult.NotAllowed => "Bu hesap tahmin yapamaz.",
+            PickResult.Locked => Lang.T("Tahminler kilitlendi; sezon başladı.", "Picks are locked; the season has started."),
+            PickResult.InvalidTeam => Lang.T("Takım bulunamadı.", "Team not found."),
+            PickResult.NoSeason => Lang.T("Aktif sezon yok.", "There is no active season."),
+            PickResult.NotAllowed => Lang.T("Bu hesap tahmin yapamaz.", "This account can't make picks."),
             _ => null,
         };
 

@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AltMiUstMu.Infrastructure.Services;
 
-public sealed record GroupResult(bool Success, string? Error = null, Group? Group = null)
+public sealed record GroupResult(bool Success, LocalizedText? Error = null, Group? Group = null)
 {
-    public static GroupResult Fail(string error) => new(false, error);
+    public static GroupResult Fail(LocalizedText error) => new(false, error);
+
+    public static GroupResult Fail(string tr, string en) => new(false, new LocalizedText(tr, en));
 }
 
 public class GroupService(AppDbContext db, TimeProvider time)
@@ -31,17 +33,17 @@ public class GroupService(AppDbContext db, TimeProvider time)
         var season = await db.Seasons.AsNoTracking().OrderByDescending(s => s.Id).FirstOrDefaultAsync(ct);
         if (season is null)
         {
-            return GroupResult.Fail("Aktif sezon bulunamadı.");
+            return GroupResult.Fail("Aktif sezon bulunamadı.", "No active season found.");
         }
 
         if (await db.Groups.CountAsync(g => g.OwnerId == userId, ct) >= MaxOwnedGroups)
         {
-            return GroupResult.Fail($"En fazla {MaxOwnedGroups} grup kurabilirsin.");
+            return GroupResult.Fail($"En fazla {MaxOwnedGroups} grup kurabilirsin.", $"You can create at most {MaxOwnedGroups} groups.");
         }
 
         if (await db.GroupMembers.CountAsync(m => m.UserId == userId, ct) >= MaxMemberships)
         {
-            return GroupResult.Fail($"En fazla {MaxMemberships} gruba üye olabilirsin.");
+            return GroupResult.Fail($"En fazla {MaxMemberships} gruba üye olabilirsin.", $"You can be a member of at most {MaxMemberships} groups.");
         }
 
         var name = TextNormalizer.CleanDisplay(rawName);
@@ -67,7 +69,7 @@ public class GroupService(AppDbContext db, TimeProvider time)
         var group = await db.Groups.Include(g => g.Members).SingleOrDefaultAsync(g => g.InviteCode == code, ct);
         if (group is null)
         {
-            return GroupResult.Fail("Davet kodu geçersiz.");
+            return GroupResult.Fail("Davet kodu geçersiz.", "Invalid invite code.");
         }
 
         if (group.Members.Any(m => m.UserId == userId))
@@ -77,12 +79,12 @@ public class GroupService(AppDbContext db, TimeProvider time)
 
         if (group.Members.Count >= MaxMembers)
         {
-            return GroupResult.Fail("Bu grup dolu.");
+            return GroupResult.Fail("Bu grup dolu.", "This group is full.");
         }
 
         if (await db.GroupMembers.CountAsync(m => m.UserId == userId, ct) >= MaxMemberships)
         {
-            return GroupResult.Fail($"En fazla {MaxMemberships} gruba üye olabilirsin.");
+            return GroupResult.Fail($"En fazla {MaxMemberships} gruba üye olabilirsin.", $"You can be a member of at most {MaxMemberships} groups.");
         }
 
         group.Members.Add(new GroupMember { UserId = userId, JoinedAt = time.GetUtcNow().UtcDateTime });
@@ -97,7 +99,7 @@ public class GroupService(AppDbContext db, TimeProvider time)
         var membership = group?.Members.SingleOrDefault(m => m.UserId == userId);
         if (group is null || membership is null)
         {
-            return GroupResult.Fail("Bu grubun üyesi değilsin.");
+            return GroupResult.Fail("Bu grubun üyesi değilsin.", "You are not a member of this group.");
         }
 
         group.Members.Remove(membership);
@@ -123,18 +125,18 @@ public class GroupService(AppDbContext db, TimeProvider time)
         var group = await db.Groups.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == groupId, ct);
         if (group is null || group.OwnerId != ownerId)
         {
-            return GroupResult.Fail("Bu işlem için grup sahibi olmalısın.");
+            return GroupResult.Fail("Bu işlem için grup sahibi olmalısın.", "Only the group owner can do this.");
         }
 
         if (memberId == ownerId)
         {
-            return GroupResult.Fail("Kendini çıkaramazsın; grubu silebilir ya da gruptan ayrılabilirsin.");
+            return GroupResult.Fail("Kendini çıkaramazsın; grubu silebilir ya da gruptan ayrılabilirsin.", "You can't remove yourself; delete the group or leave it instead.");
         }
 
         var member = group.Members.SingleOrDefault(m => m.UserId == memberId);
         if (member is null)
         {
-            return GroupResult.Fail("Üye bulunamadı.");
+            return GroupResult.Fail("Üye bulunamadı.", "Member not found.");
         }
 
         group.Members.Remove(member);
@@ -147,7 +149,7 @@ public class GroupService(AppDbContext db, TimeProvider time)
         var group = await db.Groups.SingleOrDefaultAsync(g => g.Id == groupId, ct);
         if (group is null || group.OwnerId != ownerId)
         {
-            return GroupResult.Fail("Bu işlem için grup sahibi olmalısın.");
+            return GroupResult.Fail("Bu işlem için grup sahibi olmalısın.", "Only the group owner can do this.");
         }
 
         db.Groups.Remove(group);

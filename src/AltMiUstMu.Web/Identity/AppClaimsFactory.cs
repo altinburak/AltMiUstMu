@@ -5,16 +5,18 @@ using Microsoft.Extensions.Options;
 
 namespace AltMiUstMu.Web.Identity;
 
-/// <summary>Adds the public display name to the auth cookie so the layout never needs a DB lookup.</summary>
+/// <summary>Adds the public display name and UI language to the auth cookie so requests never need a DB lookup.</summary>
 public sealed class AppClaimsFactory(UserManager<AppUser> users, RoleManager<IdentityRole> roles, IOptions<IdentityOptions> options)
     : UserClaimsPrincipalFactory<AppUser, IdentityRole>(users, roles, options)
 {
     public const string DisplayNameClaim = "altmiustmu:display_name";
+    public const string LanguageClaim = "altmiustmu:lang";
 
     protected override async Task<ClaimsIdentity> GenerateClaimsAsync(AppUser user)
     {
         var identity = await base.GenerateClaimsAsync(user);
         identity.AddClaim(new Claim(DisplayNameClaim, user.DisplayName));
+        identity.AddClaim(new Claim(LanguageClaim, user.Language));
         return identity;
     }
 }

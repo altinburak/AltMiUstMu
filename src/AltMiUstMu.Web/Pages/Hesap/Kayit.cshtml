@@ -1,11 +1,11 @@
 @page "/hesap/kayit"
 @model AltMiUstMu.Web.Pages.Hesap.KayitModel
 @{
-    ViewData["Title"] = "Kayıt ol";
+    ViewData["Title"] = T("Kayıt ol", "Sign up");
     Layout = "_AuthLayout";
 }
-<h1 class="h1 text-center">Oyuna katıl</h1>
-<p class="muted mt-2 text-center">Ücretsiz, bahissiz, sadece eğlence. Kaan ve İnan'ı geçebilecek misin?</p>
+<h1 class="h1 text-center">@T("Oyuna katıl", "Join the game")</h1>
+<p class="muted mt-2 text-center">@T("Ücretsiz, bahissiz, sadece eğlence. Kaan ve İnan'ı geçebilecek misin?", "Free, no betting, just fun. Can you beat Kaan and İnan?")</p>
 
 <form method="post" class="mt-6 space-y-4" novalidate>
     <partial name="_FormErrors" />
@@ -13,7 +13,7 @@
     <div>
         <label asp-for="Input.DisplayName" class="label"></label>
         <input asp-for="Input.DisplayName" class="input" autocomplete="nickname" maxlength="20" required aria-describedby="dn-help" />
-        <p id="dn-help" class="mt-1 text-xs muted">3-20 karakter. Liderlik tablosunda bu adla görüneceksin.</p>
+        <p id="dn-help" class="mt-1 text-xs muted">@T("3-20 karakter. Liderlik tablosunda bu adla görüneceksin.", "3-20 characters. This is the name shown on the leaderboard.")</p>
         <span asp-validation-for="Input.DisplayName" class="field-error"></span>
     </div>
     <div>
@@ -24,7 +24,7 @@
     <div>
         <label asp-for="Input.Password" class="label"></label>
         <input asp-for="Input.Password" class="input" autocomplete="new-password" required aria-describedby="pw-help" />
-        <p id="pw-help" class="mt-1 text-xs muted">En az 8 karakter, en az bir küçük harf ve bir rakam.</p>
+        <p id="pw-help" class="mt-1 text-xs muted">@T("En az 8 karakter, en az bir küçük harf ve bir rakam.", "At least 8 characters, with at least one lowercase letter and one digit.")</p>
         <span asp-validation-for="Input.Password" class="field-error"></span>
     </div>
     <div>
@@ -33,15 +33,20 @@
         <span asp-validation-for="Input.ConfirmPassword" class="field-error"></span>
     </div>
     <div>
+        <span class="label">@T("Dil", "Language")</span>
+        <partial name="_LanguagePicker" model='("Input.Language", Model.Input.Language)' />
+        <p class="mt-1 text-xs muted">@T("İstediğin zaman hesap ayarlarından değiştirebilirsin.", "You can change it any time in your account settings.")</p>
+    </div>
+    <div>
         <label class="flex items-start gap-3 text-sm">
             <input asp-for="Input.AcceptRules" type="checkbox" class="mt-0.5 size-5 rounded accent-brand-500" />
-            <span class="muted">Bunun para ödülü olmayan, tamamen eğlence amaçlı bir tahmin oyunu olduğunu anlıyorum.</span>
+            <span class="muted">@T("Bunun para ödülü olmayan, tamamen eğlence amaçlı bir tahmin oyunu olduğunu anlıyorum.", "I understand this is a prediction game just for fun, with no cash prizes.")</span>
         </label>
         <span asp-validation-for="Input.AcceptRules" class="field-error"></span>
     </div>
-    <button type="submit" class="btn btn-primary w-full">Kayıt ol</button>
+    <button type="submit" class="btn btn-primary w-full">@T("Kayıt ol", "Sign up")</button>
 </form>
 
 @section Below {
-    <p class="mt-6 text-center text-sm muted">Zaten hesabın var mı? <a href="/hesap/giris@(string.IsNullOrEmpty(Model.ReturnUrl) ? "" : "?returnUrl=" + Uri.EscapeDataString(Model.ReturnUrl))" class="font-semibold text-brand-600 hover:underline dark:text-brand-400">Giriş yap</a></p>
+    <p class="mt-6 text-center text-sm muted">@T("Zaten hesabın var mı?", "Already have an account?") <a href="/hesap/giris@(string.IsNullOrEmpty(Model.ReturnUrl) ? "" : "?returnUrl=" + Uri.EscapeDataString(Model.ReturnUrl))" class="font-semibold text-brand-600 hover:underline dark:text-brand-400">@T("Giriş yap", "Sign in")</a></p>
 }

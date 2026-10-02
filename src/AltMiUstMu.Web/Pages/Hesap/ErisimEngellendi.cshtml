@@ -1,12 +1,12 @@
 @page "/hesap/erisim-engellendi"
 @{
-    ViewData["Title"] = "Erişim engellendi";
+    ViewData["Title"] = T("Erişim engellendi", "Access denied");
     Layout = "_AuthLayout";
     Response.StatusCode = 403;
 }
 <div class="text-center">
     <div class="mx-auto grid size-14 place-items-center rounded-2xl bg-red-500/15 text-3xl" aria-hidden="true">🚫</div>
-    <h1 class="h1 mt-4">Bu sayfaya erişimin yok</h1>
-    <p class="muted mt-3">Bu alan yalnızca yöneticilere açık.</p>
-    <a href="/" class="btn btn-primary mt-6 w-full">Ana sayfaya dön</a>
+    <h1 class="h1 mt-4">@T("Bu sayfaya erişimin yok", "You don't have access to this page")</h1>
+    <p class="muted mt-3">@T("Bu alan yalnızca yöneticilere açık.", "This area is for admins only.")</p>
+    <a href="/" class="btn btn-primary mt-6 w-full">@T("Ana sayfaya dön", "Back to home")</a>
 </div>

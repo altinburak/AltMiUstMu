@@ -1,24 +1,40 @@
 @page "/hesap/kayit-tamam"
 @{
-    ViewData["Title"] = "E-postanı kontrol et";
+    ViewData["Title"] = T("E-postanı kontrol et", "Check your email");
     Layout = "_AuthLayout";
     var email = Request.Query["email"].ToString();
 }
 <div class="text-center">
     <div class="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-500/15 text-3xl" aria-hidden="true">📬</div>
-    <h1 class="h1 mt-4">Neredeyse tamam!</h1>
+    <h1 class="h1 mt-4">@T("Neredeyse tamam!", "Almost done!")</h1>
     <p class="muted mt-3">
-        @if (!string.IsNullOrEmpty(email))
+        @if (IsEnglish)
         {
-            <strong class="text-zinc-800 dark:text-zinc-200">@email</strong>
-            <text> adresine</text>
+            <text>We sent a verification link to</text>
+            @if (!string.IsNullOrEmpty(email))
+            {
+                <strong class="text-zinc-800 dark:text-zinc-200">@email</strong><text>.</text>
+            }
+            else
+            {
+                <text>your email address.</text>
+            }
+            <text>Click it to activate your account, then start making your picks.</text>
         }
         else
         {
-            <text>E-posta adresine</text>
+            @if (!string.IsNullOrEmpty(email))
+            {
+                <strong class="text-zinc-800 dark:text-zinc-200">@email</strong>
+                <text> adresine</text>
+            }
+            else
+            {
+                <text>E-posta adresine</text>
+            }
+            <text>bir doğrulama bağlantısı gönderdik. Bağlantıya tıklayıp hesabını etkinleştir, ardından tahminlerini yapmaya başla.</text>
         }
-        bir doğrulama bağlantısı gönderdik. Bağlantıya tıklayıp hesabını etkinleştir, ardından tahminlerini yapmaya başla.
     </p>
-    <p class="mt-4 text-sm muted">E-posta gelmedi mi? Spam klasörüne bak ya da <a href="/hesap/onay-gonder?email=@Uri.EscapeDataString(email)" class="font-semibold text-brand-600 hover:underline dark:text-brand-400">tekrar gönder</a>.</p>
-    <a href="/hesap/giris" class="btn btn-secondary mt-6 w-full">Giriş sayfasına git</a>
+    <p class="mt-4 text-sm muted">@T("E-posta gelmedi mi? Spam klasörüne bak ya da", "No email? Check your spam folder or") <a href="/hesap/onay-gonder?email=@Uri.EscapeDataString(email)" class="font-semibold text-brand-600 hover:underline dark:text-brand-400">@T("tekrar gönder", "resend it")</a>.</p>
+    <a href="/hesap/giris" class="btn btn-secondary mt-6 w-full">@T("Giriş sayfasına git", "Go to sign in")</a>
 </div>

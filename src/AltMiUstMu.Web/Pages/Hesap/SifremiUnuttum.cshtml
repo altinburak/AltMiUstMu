@@ -1,26 +1,26 @@
 @page "/hesap/sifremi-unuttum"
 @model AltMiUstMu.Web.Pages.Hesap.SifremiUnuttumModel
 @{
-    ViewData["Title"] = "Şifremi unuttum";
+    ViewData["Title"] = T("Şifremi unuttum", "Forgot password");
     Layout = "_AuthLayout";
 }
-<h1 class="h1 text-center">Şifreni mi unuttun?</h1>
+<h1 class="h1 text-center">@T("Şifreni mi unuttun?", "Forgot your password?")</h1>
 @if (!Model.EmailEnabled)
 {
     <div class="alert-info mt-6" role="status">
-        Şu an e-posta gönderimi kapalı. Şifreni sıfırlamak için oyunun yöneticisine yaz; sana geçici bir şifre verecek.
-        Giriş yaptıktan sonra <strong>Hesap ayarları</strong> sayfasından kendi şifreni belirleyebilirsin.
+        @T("Şu an e-posta gönderimi kapalı. Şifreni sıfırlamak için oyunun yöneticisine yaz; sana geçici bir şifre verecek.", "Sending email is turned off right now. To reset your password, message the game's admin; they'll give you a temporary password.")
+        @T("Giriş yaptıktan sonra", "After signing in, you can set your own password on the") <strong>@T("Hesap ayarları", "Account settings")</strong> @T("sayfasından kendi şifreni belirleyebilirsin.", "page.")
     </div>
-    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">Giriş sayfasına dön</a>
+    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">@T("Giriş sayfasına dön", "Back to sign in")</a>
 }
 else if (Model.Sent)
 {
-    <div class="alert-success mt-6" role="status">Bu adrese kayıtlı bir hesap varsa şifre sıfırlama bağlantısı gönderdik. Bağlantı 24 saat geçerli.</div>
-    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">Giriş sayfasına dön</a>
+    <div class="alert-success mt-6" role="status">@T("Bu adrese kayıtlı bir hesap varsa şifre sıfırlama bağlantısı gönderdik. Bağlantı 24 saat geçerli.", "If an account is registered with this address, we sent a password reset link. It's valid for 24 hours.")</div>
+    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">@T("Giriş sayfasına dön", "Back to sign in")</a>
 }
 else
 {
-    <p class="muted mt-2 text-center">E-posta adresini yaz, sana şifre sıfırlama bağlantısı gönderelim.</p>
+    <p class="muted mt-2 text-center">@T("E-posta adresini yaz, sana şifre sıfırlama bağlantısı gönderelim.", "Enter your email address and we'll send you a password reset link.")</p>
     <form method="post" class="mt-6 space-y-4" novalidate>
         <partial name="_FormErrors" />
         <div>
@@ -28,9 +28,9 @@ else
             <input asp-for="Email" class="input" autocomplete="email" inputmode="email" required autofocus />
             <span asp-validation-for="Email" class="field-error"></span>
         </div>
-        <button type="submit" class="btn btn-primary w-full">Sıfırlama bağlantısı gönder</button>
+        <button type="submit" class="btn btn-primary w-full">@T("Sıfırlama bağlantısı gönder", "Send reset link")</button>
     </form>
 }
 @section Below {
-    <p class="mt-6 text-center text-sm muted"><a href="/hesap/giris" class="font-semibold text-brand-600 hover:underline dark:text-brand-400">Girişe dön</a></p>
+    <p class="mt-6 text-center text-sm muted"><a href="/hesap/giris" class="font-semibold text-brand-600 hover:underline dark:text-brand-400">@T("Girişe dön", "Back to sign in")</a></p>
 }

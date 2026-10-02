@@ -4,6 +4,7 @@ using AltMiUstMu.Core.Text;
 using AltMiUstMu.Infrastructure.Data;
 using AltMiUstMu.Infrastructure.Identity;
 using AltMiUstMu.Web.Infrastructure;
+using AltMiUstMu.Web.Localization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -53,22 +54,35 @@ public class KayitModel(
 
         [Range(typeof(bool), "true", "true", ErrorMessage = "Devam etmek için kuralları kabul etmelisin.")]
         public bool AcceptRules { get; set; }
+
+        [Display(Name = "Dil")]
+        public string Language { get; set; } = Lang.Turkish;
     }
 
-    public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? Redirect("/tahminler") : Page();
+    public IActionResult OnGet()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return Redirect("/tahminler");
+        }
+
+        // Turkish unless this browser already switched to English.
+        Input.Language = Lang.Current;
+        return Page();
+    }
 
     public async Task<IActionResult> OnPostAsync()
     {
         var displayName = TextNormalizer.CleanDisplay(Input.DisplayName);
         foreach (var error in NameRules.ValidateDisplayName(displayName))
         {
-            ModelState.AddModelError("Input.DisplayName", error);
+            ModelState.AddModelError("Input.DisplayName", error.ToString());
         }
 
         var key = TextNormalizer.Fold(displayName);
         if (ModelState.IsValid && await db.Users.AnyAsync(u => u.DisplayNameKey == key))
         {
-            ModelState.AddModelError("Input.DisplayName", "Bu kullanıcı adı alınmış.");
+            ModelState.AddModelError("Input.DisplayName", Lang.T("Bu kullanıcı adı alınmış.", "This username is taken."));
         }
 
         if (!ModelState.IsValid)
@@ -85,6 +99,7 @@ public class KayitModel(
             DisplayNameKey = key,
             CreatedAt = time.GetUtcNow().UtcDateTime,
             LockoutEnabled = true,
+            Language = Lang.Normalize(Input.Language),
         };
 
         IdentityResult result;
@@ -94,7 +109,7 @@ public class KayitModel(
         }
         catch (DbUpdateException)
         {
-            ModelState.AddModelError("Input.DisplayName", "Bu kullanıcı adı alınmış.");
+            ModelState.AddModelError("Input.DisplayName", Lang.T("Bu kullanıcı adı alınmış.", "This username is taken."));
             return Page();
         }
 
@@ -112,12 +127,15 @@ public class KayitModel(
         }
 
         logger.LogInformation("New user registered: {DisplayName}", displayName);
+        LanguageService.RememberInBrowser(HttpContext, user);
         var returnUrl = Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : null;
 
         if (!settings.RequireEmailConfirmation)
         {
             await signIn.SignInAsync(user, isPersistent: true);
-            TempData["Toast"] = $"Hoş geldin {displayName}! Şimdi 30 takım için tahminlerini yap.";
+            TempData["Toast"] = user.Language == Lang.English
+                ? $"Welcome {displayName}! Now make your picks for all 30 teams."
+                : $"Hoş geldin {displayName}! Şimdi 30 takım için tahminlerini yap.";
             return LocalRedirect(returnUrl ?? "/tahminler");
         }
 
@@ -136,7 +154,7 @@ public class KayitModel(
             {
                 link += $"&returnUrl={Uri.EscapeDataString(returnUrl)}";
             }
-            await emails.SendConfirmationAsync(user.Email!, user.DisplayName, link);
+            await emails.SendConfirmationAsync(user.Email!, user.DisplayName, link, user.Language);
         }
         catch (Exception ex)
         {

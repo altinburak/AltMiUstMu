@@ -32,6 +32,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.Property(u => u.DisplayNameKey).HasMaxLength(40).IsRequired();
             e.HasIndex(u => u.DisplayNameKey).IsUnique();
             e.HasIndex(u => u.IsPundit);
+            e.Property(u => u.Language).HasMaxLength(5).IsRequired().HasDefaultValue("tr");
         });
 
         builder.Entity<Season>(e =>

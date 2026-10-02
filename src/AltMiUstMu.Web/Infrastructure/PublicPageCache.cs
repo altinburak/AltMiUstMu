@@ -1,6 +1,7 @@
 using AltMiUstMu.Core.Abstractions;
 using AltMiUstMu.Core.Entities;
 using AltMiUstMu.Infrastructure.Data;
+using AltMiUstMu.Web.Localization;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -32,7 +33,9 @@ public static class PublicPageCache
                 {
                     var version = await ctx.RequestServices.GetRequiredService<DataVersionProvider>().GetAsync(ct);
                     return new KeyValuePair<string, string>("dv", version);
-                }));
+                })
+                // Anonymous visitors pick a language with a cookie; never serve one language's page to the other.
+                .VaryByValue(_ => new KeyValuePair<string, string>("lang", Lang.Current)));
         });
     }
 }

@@ -1,18 +1,18 @@
 @page "/hesap/onay-gonder"
 @model AltMiUstMu.Web.Pages.Hesap.OnayGonderModel
 @{
-    ViewData["Title"] = "Doğrulama e-postası";
+    ViewData["Title"] = T("Doğrulama e-postası", "Verification email");
     Layout = "_AuthLayout";
 }
-<h1 class="h1 text-center">Doğrulama e-postası</h1>
+<h1 class="h1 text-center">@T("Doğrulama e-postası", "Verification email")</h1>
 @if (Model.Sent)
 {
-    <div class="alert-success mt-6" role="status">Bu adresle doğrulanmamış bir hesap varsa yeni bir bağlantı gönderdik. Gelen kutunu kontrol et.</div>
-    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">Giriş sayfasına dön</a>
+    <div class="alert-success mt-6" role="status">@T("Bu adresle doğrulanmamış bir hesap varsa yeni bir bağlantı gönderdik. Gelen kutunu kontrol et.", "If there is an unverified account with this address, we sent a new link. Check your inbox.")</div>
+    <a href="/hesap/giris" class="btn btn-secondary mt-4 w-full">@T("Giriş sayfasına dön", "Back to sign in")</a>
 }
 else
 {
-    <p class="muted mt-2 text-center">E-posta adresini yaz, doğrulama bağlantısını yeniden gönderelim.</p>
+    <p class="muted mt-2 text-center">@T("E-posta adresini yaz, doğrulama bağlantısını yeniden gönderelim.", "Enter your email address and we'll resend the verification link.")</p>
     <form method="post" class="mt-6 space-y-4" novalidate>
         <partial name="_FormErrors" />
         <div>
@@ -20,6 +20,6 @@ else
             <input asp-for="Email" class="input" autocomplete="email" inputmode="email" required />
             <span asp-validation-for="Email" class="field-error"></span>
         </div>
-        <button type="submit" class="btn btn-primary w-full">Tekrar gönder</button>
+        <button type="submit" class="btn btn-primary w-full">@T("Tekrar gönder", "Resend")</button>
     </form>
 }

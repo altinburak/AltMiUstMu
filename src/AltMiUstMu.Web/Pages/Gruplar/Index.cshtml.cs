@@ -28,12 +28,12 @@ public class IndexModel(AppDbContext db, GroupService groups) : PageModel
         var result = await groups.CreateAsync(User.UserId()!, NewName ?? "", ct);
         if (!result.Success)
         {
-            ModelState.AddModelError(nameof(NewName), result.Error!);
+            ModelState.AddModelError(nameof(NewName), result.Error!.ToString());
             await LoadAsync(ct);
             return Page();
         }
 
-        TempData["Toast"] = "Grup kuruldu! Davet bağlantısını arkadaşlarınla paylaş.";
+        TempData["Toast"] = Lang.T("Grup kuruldu! Davet bağlantısını arkadaşlarınla paylaş.", "Group created! Share the invite link with your friends.");
         return Redirect($"/gruplar/{result.Group!.Slug}");
     }
 
@@ -50,12 +50,12 @@ public class IndexModel(AppDbContext db, GroupService groups) : PageModel
         var result = await groups.JoinAsync(User.UserId()!, code, ct);
         if (!result.Success)
         {
-            ModelState.AddModelError(nameof(InviteCode), result.Error!);
+            ModelState.AddModelError(nameof(InviteCode), result.Error!.ToString());
             await LoadAsync(ct);
             return Page();
         }
 
-        TempData["Toast"] = $"{result.Group!.Name} grubuna katıldın.";
+        TempData["Toast"] = Lang.T($"{result.Group!.Name} grubuna katıldın.", $"You joined {result.Group!.Name}.");
         return Redirect($"/gruplar/{result.Group.Slug}");
     }
 

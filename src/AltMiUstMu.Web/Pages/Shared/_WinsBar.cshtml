@@ -8,13 +8,13 @@
 }
 <div class="flex flex-col gap-1.5">
     <div class="relative h-2.5 rounded-full bg-zinc-200 dark:bg-ink-800" role="img"
-         aria-label="@Model.Wins galibiyet, barem @Display.Line(Model.Line), projeksiyon @Display.Number(Model.Projected)">
+         aria-label="@T($"{Model.Wins} galibiyet, barem {Display.Line(Model.Line)}, projeksiyon {Display.Number(Model.Projected)}", $"{Model.Wins} wins, line {Display.Line(Model.Line)}, projection {Display.Number(Model.Projected)}")">
         <div class="absolute inset-y-0 left-0 rounded-full @(ahead ? "bg-brand-500/25" : "bg-sky-500/25")" style="width: @Display.Css(projPct)%"></div>
         <div class="absolute inset-y-0 left-0 rounded-full @(ahead ? "bg-brand-500" : "bg-sky-500")" style="width: @Display.Css(winsPct)%"></div>
-        <div class="absolute -top-1 -bottom-1 w-0.5 rounded bg-zinc-900 dark:bg-white" style="left: @Display.Css(linePct)%" title="Barem @Display.Line(Model.Line)"></div>
+        <div class="absolute -top-1 -bottom-1 w-0.5 rounded bg-zinc-900 dark:bg-white" style="left: @Display.Css(linePct)%" title="@T("Barem", "Line") @Display.Line(Model.Line)"></div>
     </div>
     <div class="flex items-center justify-between text-xs muted tabular-nums">
-        <span><strong class="text-zinc-800 dark:text-zinc-200">@Model.Wins-@Model.Losses</strong> (@Model.GamesPlayed/@Model.GamesPerTeam maç)</span>
+        <span><strong class="text-zinc-800 dark:text-zinc-200">@Model.Wins-@Model.Losses</strong> (@Model.GamesPlayed/@Model.GamesPerTeam @T("maç", "games"))</span>
         <span>Proj. <strong class="text-zinc-800 dark:text-zinc-200">@Display.Number(Model.Projected)</strong></span>
     </div>
 </div>

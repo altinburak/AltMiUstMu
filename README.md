@@ -39,7 +39,7 @@ Oyun, Türkçe NBA programı **Amerikan Mutfak**'tan ilham alıyor. Sunucular **
 
 Diğer özellikler:
 
-- Tamamen Türkçe arayüz, e-postalar ve hata mesajları. Saatler İstanbul saatiyle gösterilir, veritabanında UTC tutulur.
+- Türkçe (varsayılan) ve İngilizce arayüz, e-postalar ve hata mesajları. Dil kayıtta seçilir, hesap ayarlarından ya da üst menüdeki TR/EN düğmesinden değiştirilir; yönetim paneli yalnızca Türkçe. Saatler İstanbul saatiyle gösterilir, veritabanında UTC tutulur.
 - Mobil öncelikli tasarım: koyu tema varsayılan, açık tema seçeneği var.
 - WhatsApp ve Twitter paylaşımları için Open Graph etiketleri.
 - Takım logoları kullanılmaz (marka hakları). Takımlar, takım renklerinde kısaltma rozetleriyle gösterilir.
@@ -50,7 +50,7 @@ Diğer özellikler:
 - HTMX ve Alpine.js (`wwwroot/lib` içinde, CDN gerekmez), Chart.js
 - Tailwind CSS v4, standalone CLI ile derleme anında üretilir (Node.js gerekmez)
 - EF Core 10 + Npgsql (PostgreSQL), code-first migration'lar
-- ASP.NET Core Identity: e-posta doğrulama, şifre sıfırlama, hesap kilitleme, Türkçe hata mesajları
+- ASP.NET Core Identity: e-posta doğrulama, şifre sıfırlama, hesap kilitleme, Türkçe/İngilizce hata mesajları
 - Resend HTTP API ile e-posta (anahtar yoksa linkler konsola yazılır)
 - Serilog (konsol), rate limiting, output caching, health check
 - xUnit + FluentAssertions

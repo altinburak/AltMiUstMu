@@ -1,6 +1,6 @@
 namespace AltMiUstMu.Core.Text;
 
-/// <summary>Validation for user-chosen public names (display names, group names). Messages are Turkish.</summary>
+/// <summary>Validation for user-chosen public names (display names, group names). Messages are Turkish + English.</summary>
 public static class NameRules
 {
     public const int DisplayNameMin = 3;
@@ -26,50 +26,50 @@ public static class NameRules
         "KAAN KURAL", "INAN OZDEMIR", "AMERIKAN MUTFAK",
     ];
 
-    public static IReadOnlyList<string> ValidateDisplayName(string? raw, bool allowReserved = false)
+    public static IReadOnlyList<LocalizedText> ValidateDisplayName(string? raw, bool allowReserved = false)
     {
-        var errors = new List<string>();
+        var errors = new List<LocalizedText>();
         var name = TextNormalizer.CleanDisplay(raw);
 
         if (name.Length < DisplayNameMin || name.Length > DisplayNameMax)
         {
-            errors.Add($"Kullanıcı adı {DisplayNameMin}-{DisplayNameMax} karakter olmalı.");
+            errors.Add(new($"Kullanıcı adı {DisplayNameMin}-{DisplayNameMax} karakter olmalı.", $"Username must be {DisplayNameMin}-{DisplayNameMax} characters."));
             return errors;
         }
 
         if (!name.All(c => char.IsLetterOrDigit(c) || c is ' ' or '_' or '.' or '-'))
         {
-            errors.Add("Kullanıcı adında yalnızca harf, rakam, boşluk, nokta, tire ve alt çizgi kullanılabilir.");
+            errors.Add(new("Kullanıcı adında yalnızca harf, rakam, boşluk, nokta, tire ve alt çizgi kullanılabilir.", "Usernames can only contain letters, digits, spaces, dots, hyphens and underscores."));
         }
 
         if (!name.Any(char.IsLetter))
         {
-            errors.Add("Kullanıcı adı en az bir harf içermeli.");
+            errors.Add(new("Kullanıcı adı en az bir harf içermeli.", "Username must contain at least one letter."));
         }
 
         if (ContainsProfanity(name))
         {
-            errors.Add("Bu kullanıcı adı uygun değil, lütfen başka bir ad seç.");
+            errors.Add(new("Bu kullanıcı adı uygun değil, lütfen başka bir ad seç.", "This username is not allowed, please choose another one."));
         }
         else if (!allowReserved && IsReserved(name))
         {
-            errors.Add("Bu kullanıcı adı ayrılmış, lütfen başka bir ad seç.");
+            errors.Add(new("Bu kullanıcı adı ayrılmış, lütfen başka bir ad seç.", "This username is reserved, please choose another one."));
         }
 
         return errors;
     }
 
-    public static IReadOnlyList<string> ValidateGroupName(string? raw)
+    public static IReadOnlyList<LocalizedText> ValidateGroupName(string? raw)
     {
-        var errors = new List<string>();
+        var errors = new List<LocalizedText>();
         var name = TextNormalizer.CleanDisplay(raw);
         if (name.Length < GroupNameMin || name.Length > GroupNameMax)
         {
-            errors.Add($"Grup adı {GroupNameMin}-{GroupNameMax} karakter olmalı.");
+            errors.Add(new($"Grup adı {GroupNameMin}-{GroupNameMax} karakter olmalı.", $"Group name must be {GroupNameMin}-{GroupNameMax} characters."));
         }
         else if (ContainsProfanity(name))
         {
-            errors.Add("Bu grup adı uygun değil, lütfen başka bir ad seç.");
+            errors.Add(new("Bu grup adı uygun değil, lütfen başka bir ad seç.", "This group name is not allowed, please choose another one."));
         }
 
         return errors;

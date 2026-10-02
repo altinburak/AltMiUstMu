@@ -4,6 +4,13 @@
 
   var THEME_KEY = 'altmiustmu-theme';
 
+  // UI language comes from <html lang> (set server side): Turkish by default, English when chosen.
+  var LANG = document.documentElement.lang === 'en' ? 'en' : 'tr';
+
+  function t(tr, en) {
+    return LANG === 'en' ? en : tr;
+  }
+
   function isDark() {
     return document.documentElement.classList.contains('dark');
   }
@@ -83,7 +90,7 @@
           var self = this;
           var done = function () {
             self.copied = true;
-            toast('Bağlantı kopyalandı');
+            toast(t('Bağlantı kopyalandı', 'Link copied'));
             setTimeout(function () { self.copied = false; }, 2000);
           };
           if (navigator.clipboard && window.isSecureContext) {
@@ -128,7 +135,7 @@
           var dir = this.dir === 'asc' ? 1 : -1;
           rows.sort(function (a, b) {
             var av = a.dataset[key], bv = b.dataset[key];
-            if (type === 'text') { return av.localeCompare(bv, 'tr') * dir; }
+            if (type === 'text') { return av.localeCompare(bv, LANG) * dir; }
             return ((parseFloat(av) || 0) - (parseFloat(bv) || 0)) * dir;
           });
           rows.forEach(function (r) { tbody.appendChild(r); });
@@ -150,13 +157,13 @@
 
   document.addEventListener('htmx:responseError', function (e) {
     var status = e.detail.xhr ? e.detail.xhr.status : 0;
-    if (status === 429) { toast('Çok hızlı gidiyorsun, biraz bekleyip tekrar dene.', 'error'); }
-    else if (status === 401 || status === 403) { toast('Bu işlem için giriş yapmalısın.', 'error'); }
-    else { toast('Bir şeyler ters gitti. Lütfen tekrar dene.', 'error'); }
+    if (status === 429) { toast(t('Çok hızlı gidiyorsun, biraz bekleyip tekrar dene.', 'You\'re going too fast, wait a moment and try again.'), 'error'); }
+    else if (status === 401 || status === 403) { toast(t('Bu işlem için giriş yapmalısın.', 'You need to sign in to do this.'), 'error'); }
+    else { toast(t('Bir şeyler ters gitti. Lütfen tekrar dene.', 'Something went wrong. Please try again.'), 'error'); }
   });
 
   document.addEventListener('htmx:sendError', function () {
-    toast('Bağlantı hatası. İnternetini kontrol edip tekrar dene.', 'error');
+    toast(t('Bağlantı hatası. İnternetini kontrol edip tekrar dene.', 'Connection error. Check your internet and try again.'), 'error');
   });
 
   // ---------- Charts ----------
@@ -179,7 +186,7 @@
       if (chart) { chart.destroy(); }
       var c = chartColors();
       var datasets = [{
-        label: 'Sıra',
+        label: t('Sıra', 'Rank'),
         data: data.ranks,
         borderColor: c.brand,
         backgroundColor: 'rgba(249,115,22,0.12)',
@@ -192,7 +199,7 @@
       }];
       if (data.projected) {
         datasets.push({
-          label: 'Projeksiyon',
+          label: t('Projeksiyon', 'Projection'),
           data: data.projected,
           borderColor: c.sky,
           borderDash: [4, 4],
@@ -214,7 +221,7 @@
           },
           scales: {
             x: { grid: { display: false }, ticks: { color: c.text, maxTicksLimit: 6, maxRotation: 0 } },
-            y: { reverse: true, min: 1, suggestedMax: data.maxRank || 10, ticks: { color: c.text, precision: 0 }, grid: { color: c.grid }, title: { display: true, text: 'Sıra', color: c.text } },
+            y: { reverse: true, min: 1, suggestedMax: data.maxRank || 10, ticks: { color: c.text, precision: 0 }, grid: { color: c.grid }, title: { display: true, text: t('Sıra', 'Rank'), color: c.text } },
             y2: { display: !!data.projected, position: 'right', min: 0, max: 30, ticks: { color: c.text, precision: 0 }, grid: { display: false } }
           }
         }

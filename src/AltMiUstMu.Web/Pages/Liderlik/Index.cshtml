@@ -1,27 +1,28 @@
 @page
 @model AltMiUstMu.Web.Pages.Liderlik.IndexModel
 @{
-    ViewData["Title"] = "Liderlik tablosu";
-    ViewData["Description"] = "Alt mı Üst mü? liderlik tablosu: NBA sezon galibiyet tahminlerinde kim önde? Kaan Kural ve İnan Özdemir kaçıncı sırada?";
+    ViewData["Title"] = T("Liderlik tablosu", "Leaderboard");
+    ViewData["Description"] = T("Alt mı Üst mü? liderlik tablosu: NBA sezon galibiyet tahminlerinde kim önde? Kaan Kural ve İnan Özdemir kaçıncı sırada?",
+                                "Alt mı Üst mü? leaderboard: who's leading the NBA season win-total predictions? Where do Kaan Kural and İnan Özdemir rank?");
 }
 
 <div class="container-app py-6 sm:py-8">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <p class="eyebrow">@Model.Season?.Label</p>
-            <h1 class="h1 mt-1">Liderlik tablosu</h1>
+            <h1 class="h1 mt-1">@T("Liderlik tablosu", "Leaderboard")</h1>
             <p class="muted mt-1">
                 @(Model.Season?.Status == SeasonStatus.Finished
-                    ? "Sezon bitti: sıralama doğru tahmin sayısına göre."
-                    : "Sıralama projeksiyona göre; eşitlikte kesin kazanılanlar, sonra tahminleri erken tamamlayan önde.")
+                    ? T("Sezon bitti: sıralama doğru tahmin sayısına göre.", "The season is over: ranked by number of correct picks.")
+                    : T("Sıralama projeksiyona göre; eşitlikte kesin kazanılanlar, sonra tahminleri erken tamamlayan önde.", "Ranked by projection; ties go to more clinched picks, then to whoever finished their picks first."))
             </p>
         </div>
         @if (Model.Locked)
         {
             <form class="relative w-full sm:w-72" role="search" hx-get="@Url.Page("/Liderlik/Index")" hx-target="#board" hx-swap="outerHTML" hx-push-url="true" hx-trigger="input changed delay:300ms from:#q, search from:#q, submit" hx-indicator="#board">
-                <label for="q" class="sr-only">Oyuncu ara</label>
+                <label for="q" class="sr-only">@T("Oyuncu ara", "Search players")</label>
                 <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">@Icons.Svg("search", "size-4")</span>
-                <input id="q" name="q" type="search" value="@Model.Query" placeholder="Oyuncu ara…" autocomplete="off" class="input pl-9" />
+                <input id="q" name="q" type="search" value="@Model.Query" placeholder="@T("Oyuncu ara…", "Search players…")" autocomplete="off" class="input pl-9" />
             </form>
         }
     </div>
@@ -30,21 +31,21 @@
     {
         <div class="card card-pad mt-6 text-center sm:p-10">
             <div class="mx-auto grid size-14 place-items-center rounded-2xl bg-brand-500/15 text-3xl" aria-hidden="true">⏳</div>
-            <h2 class="h2 mt-4">Sıralama sezon başlayınca açılacak</h2>
+            <h2 class="h2 mt-4">@T("Sıralama sezon başlayınca açılacak", "The leaderboard opens when the season starts")</h2>
             <p class="mx-auto mt-2 max-w-md muted">
-                Tahminler kilitlenene kadar kimin ne seçtiği gizli.
+                @T("Tahminler kilitlenene kadar kimin ne seçtiği gizli.", "Until picks lock, everyone's choices stay hidden.")
                 @if (Model.CompletePlayers > 0)
                 {
-                    <text>Şu ana kadar <strong class="text-zinc-800 dark:text-zinc-200">@Model.CompletePlayers</strong> oyuncu 30 tahminini tamamladı.</text>
+                    <text>@T("Şu ana kadar", "So far,") <strong class="text-zinc-800 dark:text-zinc-200">@Model.CompletePlayers</strong> @T("oyuncu 30 tahminini tamamladı.", Model.CompletePlayers == 1 ? "player has made all 30 picks." : "players have made all 30 picks.")</text>
                 }
             </p>
             @if (Model.Season is not null)
             {
                 <div class="mt-5" x-data="countdown('@Display.Iso(Model.Season.LockAt)')">
-                    <p class="font-mono text-2xl font-bold tabular-nums"><span x-text="d">--</span>g <span x-text="h">--</span>s <span x-text="m">--</span>d <span x-text="s">--</span>sn</p>
+                    <p class="font-mono text-2xl font-bold tabular-nums"><span x-text="d">--</span>@T("g", "d") <span x-text="h">--</span>@T("s", "h") <span x-text="m">--</span>@T("d", "m") <span x-text="s">--</span>@T("sn", "s")</p>
                 </div>
             }
-            <a href="/tahminler" class="btn btn-primary mt-6">Tahminlerini yap</a>
+            <a href="/tahminler" class="btn btn-primary mt-6">@T("Tahminlerini yap", "Make your picks")</a>
         </div>
     }
     else

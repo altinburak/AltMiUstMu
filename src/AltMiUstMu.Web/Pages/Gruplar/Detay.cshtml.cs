@@ -44,11 +44,11 @@ public class DetayModel(AppDbContext db, SeasonService seasons, GroupService gro
         var result = await groups.RemoveMemberAsync(MyId ?? "", Group.Id, memberId, ct);
         if (!result.Success)
         {
-            Response.Headers["HX-Trigger"] = System.Text.Json.JsonSerializer.Serialize(new { toast = new { message = result.Error, type = "error" } });
+            Response.Headers["HX-Trigger"] = System.Text.Json.JsonSerializer.Serialize(new { toast = new { message = result.Error?.ToString(), type = "error" } });
         }
         else
         {
-            Response.Headers["HX-Trigger"] = System.Text.Json.JsonSerializer.Serialize(new { toast = new { message = "Üye gruptan çıkarıldı." } });
+            Response.Headers["HX-Trigger"] = System.Text.Json.JsonSerializer.Serialize(new { toast = new { message = Lang.T("Üye gruptan çıkarıldı.", "Member removed from the group.") } });
         }
 
         await LoadAsync(slug, ct);
@@ -63,7 +63,7 @@ public class DetayModel(AppDbContext db, SeasonService seasons, GroupService gro
         }
 
         var result = await groups.LeaveAsync(MyId ?? "", Group.Id, ct);
-        TempData[result.Success ? "Toast" : "ToastError"] = result.Success ? $"{Group.Name} grubundan ayrıldın." : result.Error;
+        TempData[result.Success ? "Toast" : "ToastError"] = result.Success ? Lang.T($"{Group.Name} grubundan ayrıldın.", $"You left {Group.Name}.") : result.Error?.ToString();
         return RedirectOrHx("/gruplar");
     }
 
@@ -75,7 +75,7 @@ public class DetayModel(AppDbContext db, SeasonService seasons, GroupService gro
         }
 
         var result = await groups.DeleteAsync(MyId ?? "", Group.Id, ct);
-        TempData[result.Success ? "Toast" : "ToastError"] = result.Success ? $"{Group.Name} silindi." : result.Error;
+        TempData[result.Success ? "Toast" : "ToastError"] = result.Success ? Lang.T($"{Group.Name} silindi.", $"{Group.Name} was deleted.") : result.Error?.ToString();
         return RedirectOrHx("/gruplar");
     }
 

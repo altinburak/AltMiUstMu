@@ -1,14 +1,14 @@
 @page
 @model AltMiUstMu.Web.Pages.Tahminler.IndexModel
 @{
-    ViewData["Title"] = "Tahminlerim";
+    ViewData["Title"] = T("Tahminlerim", "My picks");
 }
 
 @if (Model.Season is null)
 {
     <div class="container-app py-16 text-center">
-        <p class="h2">Henüz bir sezon tanımlanmadı.</p>
-        <p class="muted mt-2">Yönetici sezonu açtığında tahminlerini buradan yapabileceksin.</p>
+        <p class="h2">@T("Henüz bir sezon tanımlanmadı.", "No season has been set up yet.")</p>
+        <p class="muted mt-2">@T("Yönetici sezonu açtığında tahminlerini buradan yapabileceksin.", "Once the admin opens the season, you can make your picks here.")</p>
     </div>
     return;
 }
@@ -17,15 +17,22 @@
     <section class="container-app pt-6 sm:pt-8">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="eyebrow">@Model.Season.Label sezonu</p>
-                <h1 class="h1 mt-1">Tahminlerim</h1>
+                <p class="eyebrow">@T($"{Model.Season.Label} sezonu", $"{Model.Season.Label} season")</p>
+                <h1 class="h1 mt-1">@T("Tahminlerim", "My picks")</h1>
                 @if (Model.Locked)
                 {
-                    <p class="muted mt-1 flex items-center gap-1.5">@Icons.Svg("lock", "size-4") Tahminler @Display.DateTime(Model.Season.LockAt) itibarıyla kilitli. Canlı durumu aşağıda takip et.</p>
+                    <p class="muted mt-1 flex items-center gap-1.5">@Icons.Svg("lock", "size-4") @T($"Tahminler {Display.DateTime(Model.Season.LockAt)} itibarıyla kilitli. Canlı durumu aşağıda takip et.", $"Picks locked on {Display.DateTime(Model.Season.LockAt)}. Follow the live standings below.")</p>
                 }
                 else
                 {
-                    <p class="muted mt-1">Her takım için sezon sonu galibiyet sayısı bareme göre <strong>ALT</strong> mı, <strong>ÜST</strong> mü? Seçimin anında kaydedilir.</p>
+                    @if (IsEnglish)
+                    {
+                        <p class="muted mt-1">Will each team finish the season <strong>UNDER</strong> or <strong>OVER</strong> its win total? Your pick is saved instantly.</p>
+                    }
+                    else
+                    {
+                        <p class="muted mt-1">Her takım için sezon sonu galibiyet sayısı bareme göre <strong>ALT</strong> mı, <strong>ÜST</strong> mü? Seçimin anında kaydedilir.</p>
+                    }
                 }
             </div>
 
@@ -34,7 +41,7 @@
                 <button type="button" x-on:click="flip()" role="switch" x-bind:aria-checked="showPundits.toString()" aria-checked="false"
                         class="flex items-center gap-3 self-start rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold shadow-sm transition hover:border-brand-400 sm:self-auto dark:border-ink-700 dark:bg-ink-900">
                     <span class="text-lg" aria-hidden="true">🎙️</span>
-                    <span>Kaan ve İnan ne dedi?</span>
+                    <span>@T("Kaan ve İnan ne dedi?", "What did Kaan and İnan pick?")</span>
                     <span class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition" x-bind:class="showPundits ? 'bg-brand-500' : 'bg-zinc-300 dark:bg-ink-600'">
                         <span class="absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition" x-bind:class="showPundits && 'translate-x-5'"></span>
                     </span>

@@ -1,28 +1,28 @@
 @page
 @model AltMiUstMu.Web.Pages.Panel.IndexModel
 @{
-    ViewData["Title"] = "Panel";
+    ViewData["Title"] = T("Panel", "Dashboard");
 }
 
 @if (Model.Season is null)
 {
-    <div class="container-app py-16 text-center"><p class="h2">Henüz bir sezon yok.</p></div>
+    <div class="container-app py-16 text-center"><p class="h2">@T("Henüz bir sezon yok.", "There is no season yet.")</p></div>
     return;
 }
 
 <div class="container-app py-6 sm:py-8">
     <p class="eyebrow">@Model.Season.Label · @Display.SeasonStatusLabel(Model.Season.Status)</p>
-    <h1 class="h1 mt-1">Merhaba, @User.DisplayName() 👋</h1>
+    <h1 class="h1 mt-1">@T("Merhaba", "Hi"), @User.DisplayName() 👋</h1>
 
     @if (Model.PickCount < Model.TeamCount)
     {
         <div class="@(Model.Locked ? "alert-error" : "alert-info") mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <p class="font-semibold">@Model.PickCount/@Model.TeamCount takım seçildi</p>
+                <p class="font-semibold">@Model.PickCount/@Model.TeamCount @T("takım seçildi", "teams picked")</p>
                 <p class="text-sm opacity-80">
                     @(Model.Locked
-                        ? "Tahminler kilitlendi. Tüm takımları seçmediğin için sıralamada yer almıyorsun."
-                        : "Sıralamaya girmek için tüm takımlara ALT ya da ÜST demelisin.")
+                        ? T("Tahminler kilitlendi. Tüm takımları seçmediğin için sıralamada yer almıyorsun.", "Picks are locked. You're not ranked because you didn't pick every team.")
+                        : T("Sıralamaya girmek için tüm takımlara ALT ya da ÜST demelisin.", "To get ranked, pick UNDER or OVER for every team."))
                 </p>
                 <div class="mt-2 h-2 w-full max-w-xs overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
                     <div class="h-full rounded-full bg-brand-500" style="width: @Display.Css(Model.PickCount * 100.0 / Math.Max(1, Model.TeamCount))%"></div>
@@ -30,7 +30,7 @@
             </div>
             @if (!Model.Locked)
             {
-                <a href="/tahminler" class="btn btn-primary shrink-0">Tahminleri tamamla</a>
+                <a href="/tahminler" class="btn btn-primary shrink-0">@T("Tahminleri tamamla", "Finish your picks")</a>
             }
         </div>
     }
@@ -38,58 +38,58 @@
     @* ---------- Stat tiles ---------- *@
     <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div class="card card-pad">
-            <p class="text-xs font-semibold tracking-wide uppercase muted">Sıran</p>
+            <p class="text-xs font-semibold tracking-wide uppercase muted">@T("Sıran", "Your rank")</p>
             @if (Model.Score?.Rank is int rank)
             {
                 var move = Display.Movement(Model.Score.Rank, Model.Score.PreviousRank, out var moveCss);
                 <p class="stat mt-1">@rank<span class="text-base font-semibold muted">/@Model.RankedCount</span></p>
-                <p class="mt-1 text-xs font-semibold @moveCss">@move <span class="font-normal muted">dünden beri</span></p>
+                <p class="mt-1 text-xs font-semibold @moveCss">@move <span class="font-normal muted">@T("dünden beri", "since yesterday")</span></p>
             }
             else
             {
                 <p class="stat mt-1 muted">–</p>
-                <p class="mt-1 text-xs muted">@(Model.Locked ? "Sıralamada değilsin" : "Sezon başlayınca")</p>
+                <p class="mt-1 text-xs muted">@(Model.Locked ? T("Sıralamada değilsin", "You're not ranked") : T("Sezon başlayınca", "Once the season starts"))</p>
             }
         </div>
         <div class="card card-pad">
-            <p class="text-xs font-semibold tracking-wide uppercase muted">Projeksiyon</p>
+            <p class="text-xs font-semibold tracking-wide uppercase muted">@T("Projeksiyon", "Projection")</p>
             <p class="stat mt-1 text-brand-500">@(Model.Score?.ProjectedCorrect ?? 0)</p>
-            <p class="mt-1 text-xs muted">Kesin + gidiyor</p>
+            <p class="mt-1 text-xs muted">@T("Kesin + gidiyor", "Clinched + on track")</p>
         </div>
         <div class="card card-pad">
-            <p class="text-xs font-semibold tracking-wide uppercase muted">Kesin</p>
+            <p class="text-xs font-semibold tracking-wide uppercase muted">@T("Kesin", "Clinched")</p>
             <p class="stat mt-1 text-emerald-500">@(Model.Score?.ClinchedCorrect ?? 0)</p>
-            <p class="mt-1 text-xs muted">Matematiksel olarak kazanıldı</p>
+            <p class="mt-1 text-xs muted">@T("Matematiksel olarak kazanıldı", "Mathematically won")</p>
         </div>
         <div class="card card-pad">
-            <p class="text-xs font-semibold tracking-wide uppercase muted">Kaybedilen</p>
+            <p class="text-xs font-semibold tracking-wide uppercase muted">@T("Kaybedilen", "Lost")</p>
             <p class="stat mt-1 text-red-500">@(Model.Score?.ClinchedWrong ?? 0)</p>
-            <p class="mt-1 text-xs muted">Riskte: @(Model.Score?.TrendingWrong ?? 0)</p>
+            <p class="mt-1 text-xs muted">@T("Riskte", "At risk"): @(Model.Score?.TrendingWrong ?? 0)</p>
         </div>
     </div>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-5">
         @* ---------- Rank history ---------- *@
         <section class="card card-pad lg:col-span-3" aria-labelledby="hist">
-            <h2 id="hist" class="h2">Sıralama geçmişi</h2>
+            <h2 id="hist" class="h2">@T("Sıralama geçmişi", "Rank history")</h2>
             @if (Model.Chart is null)
             {
                 <div class="mt-4 grid h-56 place-items-center rounded-xl border border-dashed border-zinc-300 text-center text-sm muted dark:border-ink-700">
-                    <p>Grafik, sezon başladıktan sonraki ilk günlük güncellemeyle oluşacak. 📈</p>
+                    <p>@T("Grafik, sezon başladıktan sonraki ilk günlük güncellemeyle oluşacak. 📈", "The chart appears with the first daily update after the season starts. 📈")</p>
                 </div>
             }
             else
             {
                 <div class="relative mt-4 h-64">
                     <div class="skeleton absolute inset-0" data-skeleton-for="rankChart"></div>
-                    <canvas id="rankChart" aria-label="Günlük sıralama grafiği" role="img"></canvas>
+                    <canvas id="rankChart" aria-label="@T("Günlük sıralama grafiği", "Daily rank chart")" role="img"></canvas>
                 </div>
             }
         </section>
 
         @* ---------- Head to head ---------- *@
         <section class="lg:col-span-2" aria-labelledby="h2h">
-            <h2 id="h2h" class="h2 mb-3">🎙️ Mutfak'a karşı</h2>
+            <h2 id="h2h" class="h2 mb-3">@T("🎙️ Mutfak'a karşı", "🎙️ You vs the pundits")</h2>
             <div class="grid gap-3">
                 @foreach (var h in Model.HeadToHeads)
                 {
@@ -97,13 +97,13 @@
                         <div class="flex items-center gap-3">
                             <span class="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-amber-400 font-black text-white">@Display.Initials(h.Pundit.DisplayName)</span>
                             <div class="min-w-0 flex-1">
-                                <a href="/oyuncu/@Uri.EscapeDataString(h.Pundit.DisplayName)" class="font-bold hover:underline">Sen vs @h.Pundit.ShortName</a>
-                                <p class="text-sm muted">@h.Agree/@h.Compared takımda aynı tahmin</p>
+                                <a href="/oyuncu/@Uri.EscapeDataString(h.Pundit.DisplayName)" class="font-bold hover:underline">@T("Sen", "You") vs @h.Pundit.ShortName</a>
+                                <p class="text-sm muted">@T($"{h.Agree}/{h.Compared} takımda aynı tahmin", $"Same pick on {h.Agree}/{h.Compared} teams")</p>
                             </div>
                             @if (h.Diff is int diff)
                             {
                                 <span class="chip @(diff > 0 ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300" : diff < 0 ? "bg-red-500/15 text-red-600 dark:text-red-300" : "bg-zinc-500/15 muted")">
-                                    @(diff > 0 ? $"Öndesin +{diff}" : diff < 0 ? $"Geridesin {diff}" : "Berabere")
+                                    @(diff > 0 ? T($"Öndesin +{diff}", $"Ahead +{diff}") : diff < 0 ? T($"Geridesin {diff}", $"Behind {diff}") : T("Berabere", "Tied"))
                                 </span>
                             }
                         </div>
@@ -117,7 +117,7 @@
                 }
                 @if (Model.HeadToHeads.Count == 0)
                 {
-                    <p class="card card-pad muted">Mutfak tahminleri henüz girilmedi.</p>
+                    <p class="card card-pad muted">@T("Mutfak tahminleri henüz girilmedi.", "The pundits' picks haven't been entered yet.")</p>
                 }
             </div>
         </section>
@@ -126,8 +126,8 @@
     @* ---------- Teams ---------- *@
     <section class="mt-8" aria-labelledby="teams">
         <div class="mb-3 flex items-end justify-between">
-            <h2 id="teams" class="h2">Takım takım tahminlerin</h2>
-            <a href="/tahminler" class="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-400">@(Model.Locked ? "Kartlar" : "Düzenle")</a>
+            <h2 id="teams" class="h2">@T("Takım takım tahminlerin", "Your picks, team by team")</h2>
+            <a href="/tahminler" class="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-400">@(Model.Locked ? T("Kartlar", "Cards") : T("Düzenle", "Edit"))</a>
         </div>
         <div class="grid gap-3 md:grid-cols-2">
             @foreach (var row in Model.Rows)
@@ -138,7 +138,7 @@
                         @Badges.Team(t, "sm")
                         <div class="min-w-0 flex-1">
                             <a href="/takim/@t.Abbreviation.ToLowerInvariant()" class="block truncate font-semibold hover:underline">@t.FullName</a>
-                            <p class="text-xs muted">Barem @Display.Line(t.Line) · Tahminin @(row.Side is null ? "–" : Display.SideLabel(row.Side.Value))</p>
+                            <p class="text-xs muted">@T("Barem", "Line") @Display.Line(t.Line) · @T("Tahminin", "Your pick") @(row.Side is null ? "–" : Display.SideLabel(row.Side.Value))</p>
                         </div>
                         @if (Model.Locked || row.Side is null)
                         {

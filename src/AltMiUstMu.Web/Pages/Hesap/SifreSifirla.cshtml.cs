@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using AltMiUstMu.Infrastructure.Identity;
+using AltMiUstMu.Web.Localization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -72,7 +73,7 @@ public class SifreSifirlaModel(UserManager<AppUser> users) : PageModel
         }
         catch (FormatException)
         {
-            ModelState.AddModelError(string.Empty, "Bağlantı geçersiz veya süresi dolmuş.");
+            ModelState.AddModelError(string.Empty, Lang.T("Bağlantı geçersiz veya süresi dolmuş.", "This link is invalid or has expired."));
             return Page();
         }
 

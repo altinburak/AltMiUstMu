@@ -2,6 +2,7 @@ using System.Text.Encodings.Web;
 using AltMiUstMu.Core.Entities;
 using AltMiUstMu.Core.Scoring;
 using Microsoft.AspNetCore.Html;
+using static AltMiUstMu.Web.Localization.Lang;
 
 namespace AltMiUstMu.Web.Helpers;
 
@@ -46,5 +47,5 @@ public static class Badges
     }
 
     public static IHtmlContent Pundit(string extra = "") =>
-        new HtmlString($"<span class=\"chip bg-gradient-to-r from-brand-500 to-amber-400 text-white shadow-sm {extra}\" title=\"Amerikan Mutfak\">🎙️ Mutfak</span>");
+        new HtmlString($"<span class=\"chip bg-gradient-to-r from-brand-500 to-amber-400 text-white shadow-sm {extra}\" title=\"Amerikan Mutfak\">{T("🎙️ Mutfak", "🎙️ Pundit")}</span>");
 }

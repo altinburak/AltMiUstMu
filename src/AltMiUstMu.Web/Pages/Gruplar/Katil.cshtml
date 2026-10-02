@@ -1,16 +1,24 @@
 @page "/gruplar/katil/{code}"
 @model AltMiUstMu.Web.Pages.Gruplar.KatilModel
 @{
-    ViewData["Title"] = $"{Model.GroupName} grubuna davetlisin";
-    ViewData["Description"] = $"{Model.OwnerName} seni Alt mı Üst mü? NBA sezon tahmin oyununda '{Model.GroupName}' grubuna davet ediyor. Kaan ve İnan'ı geçebilecek misin?";
+    ViewData["Title"] = T($"{Model.GroupName} grubuna davetlisin", $"You're invited to {Model.GroupName}");
+    ViewData["Description"] = T($"{Model.OwnerName} seni Alt mı Üst mü? NBA sezon tahmin oyununda '{Model.GroupName}' grubuna davet ediyor. Kaan ve İnan'ı geçebilecek misin?",
+                                $"{Model.OwnerName} is inviting you to the '{Model.GroupName}' group in Alt mı Üst mü?, the NBA season prediction game. Can you beat Kaan and İnan?");
     Layout = "_AuthLayout";
     var returnUrl = $"/gruplar/katil/{Model.Code}";
 }
 <div class="text-center">
     <div class="mx-auto grid size-16 place-items-center rounded-2xl bg-brand-500/15 text-2xl font-black text-brand-600 dark:text-brand-400">@Display.Initials(Model.GroupName)</div>
-    <p class="eyebrow mt-4">Grup daveti</p>
+    <p class="eyebrow mt-4">@T("Grup daveti", "Group invite")</p>
     <h1 class="h1 mt-1">@Model.GroupName</h1>
-    <p class="muted mt-2"><strong class="text-zinc-800 dark:text-zinc-200">@Model.OwnerName</strong> seni bu gruba davet ediyor · @Model.MemberCount üye</p>
+    @if (IsEnglish)
+    {
+        <p class="muted mt-2"><strong class="text-zinc-800 dark:text-zinc-200">@Model.OwnerName</strong> is inviting you to this group · @Model.MemberCount @(Model.MemberCount == 1 ? "member" : "members")</p>
+    }
+    else
+    {
+        <p class="muted mt-2"><strong class="text-zinc-800 dark:text-zinc-200">@Model.OwnerName</strong> seni bu gruba davet ediyor · @Model.MemberCount üye</p>
+    }
 
     @if (Model.Error is not null)
     {
@@ -19,20 +27,20 @@
 
     @if (Model.AlreadyMember)
     {
-        <a href="/gruplar/@Model.Slug" class="btn btn-primary mt-6 w-full">Zaten üyesin – gruba git</a>
+        <a href="/gruplar/@Model.Slug" class="btn btn-primary mt-6 w-full">@T("Zaten üyesin – gruba git", "You're already a member – go to the group")</a>
     }
     else if (User.Identity?.IsAuthenticated == true)
     {
         <form method="post" class="mt-6">
-            <button type="submit" class="btn btn-primary w-full">Gruba katıl</button>
+            <button type="submit" class="btn btn-primary w-full">@T("Gruba katıl", "Join the group")</button>
         </form>
     }
     else
     {
         <div class="mt-6 grid gap-3">
-            <a href="/hesap/kayit?returnUrl=@Uri.EscapeDataString(returnUrl)" class="btn btn-primary w-full">Kayıt ol ve katıl</a>
-            <a href="/hesap/giris?returnUrl=@Uri.EscapeDataString(returnUrl)" class="btn btn-secondary w-full">Zaten hesabım var</a>
+            <a href="/hesap/kayit?returnUrl=@Uri.EscapeDataString(returnUrl)" class="btn btn-primary w-full">@T("Kayıt ol ve katıl", "Sign up and join")</a>
+            <a href="/hesap/giris?returnUrl=@Uri.EscapeDataString(returnUrl)" class="btn btn-secondary w-full">@T("Zaten hesabım var", "I already have an account")</a>
         </div>
-        <p class="mt-4 text-xs muted">Kayıt olduktan sonra bu bağlantıyı tekrar açarak gruba katılabilirsin.</p>
+        <p class="mt-4 text-xs muted">@T("Kayıt olduktan sonra bu bağlantıyı tekrar açarak gruba katılabilirsin.", "After signing up, open this link again to join the group.")</p>
     }
 </div>

@@ -1,5 +1,6 @@
 using System.Text;
 using AltMiUstMu.Infrastructure.Identity;
+using AltMiUstMu.Web.Localization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -46,6 +47,7 @@ public class EpostaOnaylaModel(UserManager<AppUser> users, SignInManager<AppUser
         if (Success && !user.IsDisabled)
         {
             await signIn.SignInAsync(user, isPersistent: true);
+            LanguageService.RememberInBrowser(HttpContext, user);
         }
 
         return Page();

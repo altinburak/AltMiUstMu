@@ -4,8 +4,10 @@
     ViewData["Title"] = Model.DisplayName;
     ViewData["OgType"] = "profile";
     ViewData["Description"] = Model.Score?.Rank is int r
-        ? $"{Model.DisplayName} Alt mı Üst mü? liderlik tablosunda {r}. sırada: projeksiyon {Model.Score.ProjectedCorrect}, kesin {Model.Score.ClinchedCorrect} doğru tahmin."
-        : $"{Model.DisplayName} Alt mı Üst mü? NBA sezon tahmin oyununda. Sen de katıl!";
+        ? T($"{Model.DisplayName} Alt mı Üst mü? liderlik tablosunda {r}. sırada: projeksiyon {Model.Score.ProjectedCorrect}, kesin {Model.Score.ClinchedCorrect} doğru tahmin.",
+            $"{Model.DisplayName} is ranked #{r} on the Alt mı Üst mü? leaderboard: projection {Model.Score.ProjectedCorrect}, {Model.Score.ClinchedCorrect} clinched correct picks.")
+        : T($"{Model.DisplayName} Alt mı Üst mü? NBA sezon tahmin oyununda. Sen de katıl!",
+            $"{Model.DisplayName} is playing Alt mı Üst mü?, the NBA season prediction game. Join in!");
 }
 <div class="container-app py-6 sm:py-8">
     <div class="flex items-center gap-4">
@@ -18,24 +20,24 @@
                     @Badges.Pundit()
                 }
             </div>
-            <p class="muted text-sm">@(Model.IsPundit ? "Amerikan Mutfak sunucusu" : $"Katılım: {Display.Date(DateOnly.FromDateTime(Model.JoinedAt))} {Model.JoinedAt.Year}")</p>
+            <p class="muted text-sm">@(Model.IsPundit ? T("Amerikan Mutfak sunucusu", "Amerikan Mutfak host") : $"{T("Katılım", "Joined")}: {Display.Date(DateOnly.FromDateTime(Model.JoinedAt))} {Model.JoinedAt.Year}")</p>
         </div>
         <div class="ml-auto hidden sm:block" x-data="copyText(window.location.href)">
-            <button type="button" class="btn btn-secondary" x-on:click="share('@Model.DisplayName – Alt mı Üst mü?')">@Icons.Svg("share", "size-4") Paylaş</button>
+            <button type="button" class="btn btn-secondary" x-on:click="share('@Model.DisplayName – Alt mı Üst mü?')">@Icons.Svg("share", "size-4") @T("Paylaş", "Share")</button>
         </div>
     </div>
 
     <div class="mt-6 grid grid-cols-3 gap-3">
         <div class="card card-pad">
-            <p class="text-xs font-semibold uppercase muted">Sıra</p>
+            <p class="text-xs font-semibold uppercase muted">@T("Sıra", "Rank")</p>
             <p class="stat mt-1">@(Model.Score?.Rank?.ToString() ?? "–")<span class="text-base font-semibold muted">@(Model.Score?.Rank is null ? "" : $"/{Model.RankedCount}")</span></p>
         </div>
         <div class="card card-pad">
-            <p class="text-xs font-semibold uppercase muted">Projeksiyon</p>
+            <p class="text-xs font-semibold uppercase muted">@T("Projeksiyon", "Projection")</p>
             <p class="stat mt-1 text-brand-500">@(Model.Score?.ProjectedCorrect ?? 0)</p>
         </div>
         <div class="card card-pad">
-            <p class="text-xs font-semibold uppercase muted">Kesin</p>
+            <p class="text-xs font-semibold uppercase muted">@T("Kesin", "Clinched")</p>
             <p class="stat mt-1 text-emerald-500">@(Model.Score?.ClinchedCorrect ?? 0)</p>
         </div>
     </div>
@@ -43,21 +45,21 @@
     @if (Model.Chart is not null)
     {
         <section class="card card-pad mt-6" aria-labelledby="hist">
-            <h2 id="hist" class="h2">Sıralama geçmişi</h2>
+            <h2 id="hist" class="h2">@T("Sıralama geçmişi", "Rank history")</h2>
             <div class="relative mt-4 h-56">
                 <div class="skeleton absolute inset-0" data-skeleton-for="rankChart"></div>
-                <canvas id="rankChart" role="img" aria-label="@Model.DisplayName sıralama grafiği"></canvas>
+                <canvas id="rankChart" role="img" aria-label="@T($"{Model.DisplayName} sıralama grafiği", $"{Model.DisplayName} rank chart")"></canvas>
             </div>
         </section>
     }
 
     <section class="mt-6" aria-labelledby="picks">
-        <h2 id="picks" class="h2 mb-3">Tahminler <span class="text-sm font-medium muted">(@Model.PickCount/30)</span></h2>
+        <h2 id="picks" class="h2 mb-3">@T("Tahminler", "Picks") <span class="text-sm font-medium muted">(@Model.PickCount/30)</span></h2>
         @if (!Model.PicksVisible)
         {
             <div class="card card-pad flex items-center gap-3 muted">
                 @Icons.Svg("lock", "size-5 shrink-0")
-                <p>Kopya çekilmesin diye tahminler sezon başlayana (@Display.DateTime(Model.Season.LockAt)) kadar gizli.</p>
+                <p>@T($"Kopya çekilmesin diye tahminler sezon başlayana ({Display.DateTime(Model.Season.LockAt)}) kadar gizli.", $"No copying: picks stay hidden until the season starts ({Display.DateTime(Model.Season.LockAt)}).")</p>
             </div>
         }
         else

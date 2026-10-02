@@ -3,9 +3,12 @@
 @{
     const string appName = "Alt mı Üst mü?";
     var title = ViewData["Title"] as string;
-    var fullTitle = string.IsNullOrEmpty(title) ? $"{appName} – NBA sezon tahmin oyunu" : $"{title} · {appName}";
+    var tagline = T("NBA sezon tahmin oyunu", "NBA season prediction game");
+    var fullTitle = string.IsNullOrEmpty(title) ? $"{appName} – {tagline}" : $"{title} · {appName}";
     var description = ViewData["Description"] as string
-        ?? "30 NBA takımı için sezon galibiyet baremlerini tahmin et: ALT mı, ÜST mü? Kaan ve İnan'ı geçebilecek misin? Ücretsiz, bahissiz, tamamen eğlence.";
+        ?? T("30 NBA takımı için sezon galibiyet baremlerini tahmin et: ALT mı, ÜST mü? Kaan ve İnan'ı geçebilecek misin? Ücretsiz, bahissiz, tamamen eğlence.",
+             "Predict the season win totals of all 30 NBA teams: UNDER or OVER? Can you beat Kaan and İnan? Free, no betting, just fun.");
+    var otherLang = IsEnglish ? Lang.Turkish : Lang.English;
     var ogImage = Links.Absolute((ViewData["OgImage"] as string) ?? "/img/og.png");
     var canonical = Links.Absolute(Context.Request.Path + Context.Request.QueryString);
     var signedIn = User.Identity?.IsAuthenticated == true;
@@ -21,7 +24,7 @@
     }
 }
 <!DOCTYPE html>
-<html lang="tr" class="dark">
+<html lang="@Lang.Current" class="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -33,14 +36,14 @@
 
     <meta property="og:site_name" content="@appName" />
     <meta property="og:type" content="@(ViewData["OgType"] as string ?? "website")" />
-    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:locale" content="@(IsEnglish ? "en_US" : "tr_TR")" />
     <meta property="og:title" content="@(title ?? appName)" />
     <meta property="og:description" content="@description" />
     <meta property="og:url" content="@canonical" />
     <meta property="og:image" content="@ogImage" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="@appName – NBA sezon tahmin oyunu" />
+    <meta property="og:image:alt" content="@appName – @tagline" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="@(title ?? appName)" />
     <meta name="twitter:description" content="@description" />
@@ -61,25 +64,33 @@
     @await RenderSectionAsync("Head", required: false)
 </head>
 <body class="flex min-h-dvh flex-col" hx-headers="@hxHeaders">
-    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white">İçeriğe geç</a>
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white">@T("İçeriğe geç", "Skip to content")</a>
 
     <header class="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/85 backdrop-blur-lg dark:border-ink-800 dark:bg-ink-950/85">
         <div class="container-app flex h-16 items-center gap-3">
-            <a href="/" class="group flex items-center gap-2 rounded-lg font-black tracking-tight" aria-label="@appName ana sayfa">
+            <a href="/" class="group flex items-center gap-2 rounded-lg font-black tracking-tight" aria-label="@appName @T("ana sayfa", "home")">
                 @Icons.Ball("size-8 transition-transform duration-300 group-hover:rotate-45")
                 <span class="text-lg leading-none sm:text-xl">Alt mı <span class="text-brand-500">Üst</span> mü?</span>
             </a>
 
-            <nav class="ml-6 hidden items-center gap-1 md:flex" aria-label="Ana menü">
-                <a href="/tahminler" class="nav-link @Active("/tahminler")">Tahminlerim</a>
-                <a href="/panel" class="nav-link @Active("/panel")">Panel</a>
-                <a href="/liderlik" class="nav-link @Active("/liderlik")">Liderlik</a>
-                <a href="/takimlar" class="nav-link @Active("/takim")">Takımlar</a>
-                <a href="/gruplar" class="nav-link @Active("/gruplar")">Gruplar</a>
+            <nav class="ml-6 hidden items-center gap-1 md:flex" aria-label="@T("Ana menü", "Main menu")">
+                <a href="/tahminler" class="nav-link @Active("/tahminler")">@T("Tahminlerim", "My picks")</a>
+                <a href="/panel" class="nav-link @Active("/panel")">@T("Panel", "Dashboard")</a>
+                <a href="/liderlik" class="nav-link @Active("/liderlik")">@T("Liderlik", "Leaderboard")</a>
+                <a href="/takimlar" class="nav-link @Active("/takim")">@T("Takımlar", "Teams")</a>
+                <a href="/gruplar" class="nav-link @Active("/gruplar")">@T("Gruplar", "Groups")</a>
             </nav>
 
             <div class="ml-auto flex items-center gap-1.5">
-                <button type="button" x-data="themeToggle" x-on:click="toggle()" class="btn-ghost btn min-h-10! px-2.5!" x-bind:aria-label="dark ? 'Açık temaya geç' : 'Koyu temaya geç'" aria-label="Temayı değiştir">
+                <form method="post" action="/dil">
+                    <input type="hidden" name="lang" value="@otherLang" />
+                    <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                    <button type="submit" class="btn-ghost btn min-h-10! px-2.5! text-xs! font-bold tracking-wide" lang="@otherLang"
+                            aria-label="@(IsEnglish ? "Türkçeye geç" : "Switch to English")" title="@(IsEnglish ? "Türkçe" : "English")">
+                        @Icons.Svg("globe", "hidden size-4 sm:block") @otherLang.ToUpperInvariant()
+                    </button>
+                </form>
+                <button type="button" x-data="themeToggle" x-on:click="toggle()" class="btn-ghost btn min-h-10! px-2.5!" x-bind:aria-label="dark ? '@T("Açık temaya geç", "Switch to light theme")' : '@T("Koyu temaya geç", "Switch to dark theme")'" aria-label="@T("Temayı değiştir", "Change theme")">
                     <span x-show="dark">@Icons.Svg("sun")</span>
                     <span x-show="!dark" x-cloak>@Icons.Svg("moon")</span>
                 </button>
@@ -88,30 +99,30 @@
                 {
                     <div class="relative" x-data="{ open: false }" x-on:keydown.escape.window="open = false" x-on:click.outside="open = false">
                         <button type="button" class="flex items-center gap-2 rounded-full border border-zinc-200 py-1 pr-2 pl-1 text-sm font-semibold transition hover:bg-zinc-100 dark:border-ink-700 dark:hover:bg-ink-800"
-                                x-on:click="open = !open" x-bind:aria-expanded="open" aria-haspopup="menu" aria-label="Hesap menüsü">
+                                x-on:click="open = !open" x-bind:aria-expanded="open" aria-haspopup="menu" aria-label="@T("Hesap menüsü", "Account menu")">
                             <span class="grid size-8 place-items-center rounded-full bg-brand-500 text-xs font-black text-white">@Display.Initials(User.DisplayName())</span>
                             <span class="hidden max-w-32 truncate sm:inline">@User.DisplayName()</span>
                             @Icons.Svg("chevron-down", "size-4 text-zinc-400")
                         </button>
                         <div x-show="open" x-cloak x-transition.origin.top.right role="menu"
                              class="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl dark:border-ink-700 dark:bg-ink-900">
-                            <a role="menuitem" href="/oyuncu/@Uri.EscapeDataString(User.DisplayName())" class="nav-link flex items-center gap-2">@Icons.Svg("user", "size-4") Profilim</a>
-                            <a role="menuitem" href="/hesap/ayarlar" class="nav-link flex items-center gap-2">@Icons.Svg("settings", "size-4") Hesap ayarları</a>
+                            <a role="menuitem" href="/oyuncu/@Uri.EscapeDataString(User.DisplayName())" class="nav-link flex items-center gap-2">@Icons.Svg("user", "size-4") @T("Profilim", "My profile")</a>
+                            <a role="menuitem" href="/hesap/ayarlar" class="nav-link flex items-center gap-2">@Icons.Svg("settings", "size-4") @T("Hesap ayarları", "Account settings")</a>
                             @if (isAdmin)
                             {
-                                <a role="menuitem" href="/admin" class="nav-link flex items-center gap-2 text-brand-600 dark:text-brand-400">@Icons.Svg("shield", "size-4") Yönetim</a>
+                                <a role="menuitem" href="/admin" class="nav-link flex items-center gap-2 text-brand-600 dark:text-brand-400">@Icons.Svg("shield", "size-4") @T("Yönetim", "Admin")</a>
                             }
                             <form method="post" action="/hesap/cikis" class="border-t border-zinc-100 pt-1 mt-1 dark:border-ink-800">
                                 @Html.AntiForgeryToken()
-                                <button role="menuitem" type="submit" class="nav-link flex w-full items-center gap-2 text-left">@Icons.Svg("logout", "size-4") Çıkış yap</button>
+                                <button role="menuitem" type="submit" class="nav-link flex w-full items-center gap-2 text-left">@Icons.Svg("logout", "size-4") @T("Çıkış yap", "Sign out")</button>
                             </form>
                         </div>
                     </div>
                 }
                 else
                 {
-                    <a href="/hesap/giris" class="btn-ghost btn hidden sm:inline-flex">Giriş yap</a>
-                    <a href="/hesap/kayit" class="btn btn-primary">Kayıt ol</a>
+                    <a href="/hesap/giris" class="btn-ghost btn hidden sm:inline-flex">@T("Giriş yap", "Sign in")</a>
+                    <a href="/hesap/kayit" class="btn btn-primary">@T("Kayıt ol", "Sign up")</a>
                 }
             </div>
         </div>
@@ -135,18 +146,18 @@
 
     <footer class="hidden border-t border-zinc-200 py-8 text-sm md:block dark:border-ink-800">
         <div class="container-app flex flex-col gap-2 muted sm:flex-row sm:items-center sm:justify-between">
-            <p><strong class="text-zinc-700 dark:text-zinc-300">@appName</strong> · Amerikan Mutfak'tan ilham alan, tamamen ücretsiz bir tahmin oyunu. Para yok, bahis yok.</p>
-            <p>NBA ve takımlarıyla resmi bir bağlantısı yoktur.</p>
+            <p><strong class="text-zinc-700 dark:text-zinc-300">@appName</strong> · @T("Amerikan Mutfak'tan ilham alan, tamamen ücretsiz bir tahmin oyunu. Para yok, bahis yok.", "A completely free prediction game inspired by Amerikan Mutfak. No money, no betting.")</p>
+            <p>@T("NBA ve takımlarıyla resmi bir bağlantısı yoktur.", "Not affiliated with the NBA or its teams.")</p>
         </div>
     </footer>
 
-    <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden dark:border-ink-800 dark:bg-ink-950/95" aria-label="Alt menü">
+    <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden dark:border-ink-800 dark:bg-ink-950/95" aria-label="@T("Alt menü", "Bottom menu")">
         <div class="flex">
-            <a href="/" class="tab-link @TabActive("/")">@Icons.Svg("home", "size-6")<span>Ana sayfa</span></a>
-            <a href="/tahminler" class="tab-link @TabActive("/tahminler")">@Icons.Svg("picks", "size-6")<span>Tahminler</span></a>
-            <a href="/panel" class="tab-link @TabActive("/panel")">@Icons.Svg("chart", "size-6")<span>Panel</span></a>
-            <a href="/liderlik" class="tab-link @TabActive("/liderlik")">@Icons.Svg("trophy", "size-6")<span>Liderlik</span></a>
-            <a href="/gruplar" class="tab-link @TabActive("/gruplar")">@Icons.Svg("users", "size-6")<span>Gruplar</span></a>
+            <a href="/" class="tab-link @TabActive("/")">@Icons.Svg("home", "size-6")<span>@T("Ana sayfa", "Home")</span></a>
+            <a href="/tahminler" class="tab-link @TabActive("/tahminler")">@Icons.Svg("picks", "size-6")<span>@T("Tahminler", "Picks")</span></a>
+            <a href="/panel" class="tab-link @TabActive("/panel")">@Icons.Svg("chart", "size-6")<span>@T("Panel", "Dashboard")</span></a>
+            <a href="/liderlik" class="tab-link @TabActive("/liderlik")">@Icons.Svg("trophy", "size-6")<span>@T("Liderlik", "Leaderboard")</span></a>
+            <a href="/gruplar" class="tab-link @TabActive("/gruplar")">@Icons.Svg("users", "size-6")<span>@T("Gruplar", "Groups")</span></a>
         </div>
     </nav>
 

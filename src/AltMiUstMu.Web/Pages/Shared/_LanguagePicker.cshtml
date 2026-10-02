@@ -1,0 +1,12 @@
+@model (string Name, string Selected)
+@* Turkish / English choice used on sign-up and in account settings. Each option is labelled in its own language. *@
+<div class="flex gap-3" role="radiogroup">
+    @foreach (var (code, label) in new[] { (Lang.Turkish, "Türkçe"), (Lang.English, "English") })
+    {
+        <label class="lang-option">
+            <input type="radio" name="@Model.Name" value="@code" checked="@(Model.Selected == code)" class="sr-only" />
+            <span class="grid size-7 place-items-center rounded-lg bg-zinc-200 text-[11px] font-black text-zinc-700 dark:bg-ink-700 dark:text-zinc-200">@code.ToUpperInvariant()</span>
+            <span>@label</span>
+        </label>
+    }
+</div>

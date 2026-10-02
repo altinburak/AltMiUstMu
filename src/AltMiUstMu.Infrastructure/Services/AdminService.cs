@@ -234,7 +234,7 @@ public class AdminService(
         var errors = NameRules.ValidateDisplayName(name, allowReserved: true);
         if (errors.Count > 0)
         {
-            return errors[0];
+            return errors[0].Tr; // the admin area is Turkish-only
         }
 
         var key = TextNormalizer.Fold(name);

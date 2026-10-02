@@ -37,11 +37,11 @@ public class KatilModel(AppDbContext db, GroupService groups) : PageModel
                 return NotFound();
             }
 
-            Error = result.Error;
+            Error = result.Error?.ToString();
             return Page();
         }
 
-        TempData["Toast"] = $"{result.Group!.Name} grubuna hoş geldin!";
+        TempData["Toast"] = Lang.T($"{result.Group!.Name} grubuna hoş geldin!", $"Welcome to {result.Group!.Name}!");
         return Redirect($"/gruplar/{result.Group.Slug}");
     }
 

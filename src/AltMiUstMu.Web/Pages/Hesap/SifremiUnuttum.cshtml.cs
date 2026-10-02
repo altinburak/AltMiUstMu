@@ -37,7 +37,7 @@ public class SifremiUnuttumModel(UserManager<AppUser> users, AccountEmails email
             {
                 var token = await users.GeneratePasswordResetTokenAsync(user);
                 var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-                await emails.SendPasswordResetAsync(user.Email!, $"/hesap/sifre-sifirla?email={Uri.EscapeDataString(user.Email!)}&code={code}");
+                await emails.SendPasswordResetAsync(user.Email!, $"/hesap/sifre-sifirla?email={Uri.EscapeDataString(user.Email!)}&code={code}", user.Language);
             }
             catch (Exception ex)
             {

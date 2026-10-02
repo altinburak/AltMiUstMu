@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using AltMiUstMu.Infrastructure.Identity;
+using AltMiUstMu.Web.Localization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -47,12 +48,17 @@ public class GirisModel(SignInManager<AppUser> signIn, UserManager<AppUser> user
         if (result.Succeeded)
         {
             logger.LogInformation("User signed in");
+            if (await users.FindByEmailAsync(Input.Email.Trim()) is { } signedIn)
+            {
+                LanguageService.RememberInBrowser(HttpContext, signedIn);
+            }
+
             return LocalRedirect(SafeReturnUrl);
         }
 
         if (result.IsLockedOut)
         {
-            ModelState.AddModelError(string.Empty, "Çok fazla hatalı deneme yaptın. Hesabın 15 dakikalığına kilitlendi.");
+            ModelState.AddModelError(string.Empty, Lang.T("Çok fazla hatalı deneme yaptın. Hesabın 15 dakikalığına kilitlendi.", "Too many failed attempts. Your account is locked for 15 minutes."));
             return Page();
         }
 
@@ -63,20 +69,20 @@ public class GirisModel(SignInManager<AppUser> signIn, UserManager<AppUser> user
             {
                 if (user.IsDisabled || user.IsPundit)
                 {
-                    ModelState.AddModelError(string.Empty, "Bu hesapla giriş yapılamıyor.");
+                    ModelState.AddModelError(string.Empty, Lang.T("Bu hesapla giriş yapılamıyor.", "This account cannot sign in."));
                     return Page();
                 }
 
                 if (!user.EmailConfirmed)
                 {
                     ShowResendLink = true;
-                    ModelState.AddModelError(string.Empty, "E-posta adresini henüz doğrulamadın. Gelen kutunu (ve spam klasörünü) kontrol et.");
+                    ModelState.AddModelError(string.Empty, Lang.T("E-posta adresini henüz doğrulamadın. Gelen kutunu (ve spam klasörünü) kontrol et.", "You haven't verified your email address yet. Check your inbox (and spam folder)."));
                     return Page();
                 }
             }
         }
 
-        ModelState.AddModelError(string.Empty, "E-posta veya şifre hatalı.");
+        ModelState.AddModelError(string.Empty, Lang.T("E-posta veya şifre hatalı.", "Incorrect email or password."));
         return Page();
     }
 

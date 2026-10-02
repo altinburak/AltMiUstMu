@@ -190,6 +190,10 @@
     @apply text-brand-600 dark:text-brand-400;
   }
 
+  .lang-option {
+    @apply flex min-h-12 flex-1 cursor-pointer items-center gap-3 rounded-xl border-2 border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm font-semibold text-zinc-600 transition duration-150 select-none hover:border-zinc-300 has-checked:border-brand-500 has-checked:bg-brand-500/10 has-checked:text-zinc-900 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-500 dark:border-ink-700 dark:bg-ink-850 dark:text-zinc-400 dark:hover:border-ink-600 dark:has-checked:text-white;
+  }
+
   .pick-btn {
     @apply flex min-h-14 flex-1 flex-col items-center justify-center rounded-xl border-2 text-base font-extrabold tracking-wide transition duration-150 select-none active:scale-[0.97];
   }

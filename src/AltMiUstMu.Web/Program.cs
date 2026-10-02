@@ -12,6 +12,7 @@ using AltMiUstMu.Infrastructure.Services;
 using AltMiUstMu.Web;
 using AltMiUstMu.Web.Identity;
 using AltMiUstMu.Web.Infrastructure;
+using AltMiUstMu.Web.Localization;
 using AltMiUstMu.Web.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -23,9 +24,9 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 
 Console.OutputEncoding = Encoding.UTF8;
-var turkish = CultureInfo.GetCultureInfo("tr-TR");
-CultureInfo.DefaultThreadCurrentCulture = turkish;
-CultureInfo.DefaultThreadCurrentUICulture = turkish;
+// Default for CLI commands and anything outside a request; requests get their culture from UseRequestLocalization.
+CultureInfo.DefaultThreadCurrentCulture = Lang.TurkishCulture;
+CultureInfo.DefaultThreadCurrentUICulture = Lang.TurkishCulture;
 
 var command = CliRunner.GetCommand(args);
 var builder = WebApplication.CreateBuilder(command is null ? args : args.Skip(1).ToArray());
@@ -66,6 +67,8 @@ builder.Services.Configure<WebEncoderOptions>(o => o.TextEncoderSettings = new T
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<GameQueries>();
 builder.Services.AddScoped<AccountEmails>();
+builder.Services.AddScoped<LanguageService>();
+builder.Services.AddLocalization();
 var accountSettings = new AccountSettings(builder.Configuration.GetValue("REQUIRE_EMAIL_CONFIRMATION", false));
 builder.Services.AddSingleton(accountSettings);
 
@@ -90,7 +93,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(o =>
     .AddEntityFrameworkStores<AppDbContext>()
     .AddSignInManager<AppSignInManager>()
     .AddClaimsPrincipalFactory<AppClaimsFactory>()
-    .AddErrorDescriber<TurkishIdentityErrorDescriber>()
+    .AddErrorDescriber<LocalizedIdentityErrorDescriber>()
     .AddDefaultTokenProviders();
 
 builder.Services.Configure<SecurityStampValidatorOptions>(o => o.ValidationInterval = TimeSpan.FromMinutes(5));
@@ -125,19 +128,20 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizePage("/Hesap/Ayarlar");
 }).AddMvcOptions(o =>
 {
+    // Evaluated per request, so they follow the request language.
     var m = o.ModelBindingMessageProvider;
-    m.SetValueMustNotBeNullAccessor(_ => "Bu alan zorunludur.");
-    m.SetMissingBindRequiredValueAccessor(name => $"'{name}' alanı zorunludur.");
-    m.SetMissingKeyOrValueAccessor(() => "Bu alan zorunludur.");
-    m.SetMissingRequestBodyRequiredValueAccessor(() => "İstek gövdesi boş olamaz.");
-    m.SetAttemptedValueIsInvalidAccessor((value, _) => $"'{value}' geçerli bir değer değil.");
-    m.SetNonPropertyAttemptedValueIsInvalidAccessor(value => $"'{value}' geçerli bir değer değil.");
-    m.SetUnknownValueIsInvalidAccessor(_ => "Girilen değer geçerli değil.");
-    m.SetNonPropertyUnknownValueIsInvalidAccessor(() => "Girilen değer geçerli değil.");
-    m.SetValueIsInvalidAccessor(value => $"'{value}' geçerli değil.");
-    m.SetValueMustBeANumberAccessor(_ => "Bu alan bir sayı olmalı.");
-    m.SetNonPropertyValueMustBeANumberAccessor(() => "Bu alan bir sayı olmalı.");
-});
+    m.SetValueMustNotBeNullAccessor(_ => Lang.T("Bu alan zorunludur.", "This field is required."));
+    m.SetMissingBindRequiredValueAccessor(name => Lang.T($"'{name}' alanı zorunludur.", $"The '{name}' field is required."));
+    m.SetMissingKeyOrValueAccessor(() => Lang.T("Bu alan zorunludur.", "This field is required."));
+    m.SetMissingRequestBodyRequiredValueAccessor(() => Lang.T("İstek gövdesi boş olamaz.", "The request body cannot be empty."));
+    m.SetAttemptedValueIsInvalidAccessor((value, _) => Lang.T($"'{value}' geçerli bir değer değil.", $"'{value}' is not a valid value."));
+    m.SetNonPropertyAttemptedValueIsInvalidAccessor(value => Lang.T($"'{value}' geçerli bir değer değil.", $"'{value}' is not a valid value."));
+    m.SetUnknownValueIsInvalidAccessor(_ => Lang.T("Girilen değer geçerli değil.", "The value entered is not valid."));
+    m.SetNonPropertyUnknownValueIsInvalidAccessor(() => Lang.T("Girilen değer geçerli değil.", "The value entered is not valid."));
+    m.SetValueIsInvalidAccessor(value => Lang.T($"'{value}' geçerli değil.", $"'{value}' is not valid."));
+    m.SetValueMustBeANumberAccessor(_ => Lang.T("Bu alan bir sayı olmalı.", "This field must be a number."));
+    m.SetNonPropertyValueMustBeANumberAccessor(() => Lang.T("Bu alan bir sayı olmalı.", "This field must be a number."));
+}).AddDataAnnotationsLocalization(o => o.DataAnnotationLocalizerProvider = (_, _) => new AttributeTextLocalizer());
 builder.Services.Configure<RouteOptions>(o =>
 {
     o.LowercaseUrls = true;
@@ -217,12 +221,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStatusCodePagesWithReExecute("/hata/{0}");
-app.UseRequestLocalization(new RequestLocalizationOptions
-{
-    DefaultRequestCulture = new RequestCulture(turkish),
-    SupportedCultures = [turkish],
-    SupportedUICultures = [turkish],
-});
 
 app.Use(async (ctx, next) =>
 {
@@ -250,6 +248,14 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseRouting();
 app.UseRateLimiter();
 app.UseAuthentication();
+// After authentication: the signed-in user's language comes from a claim in the auth cookie.
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(Lang.TurkishCulture),
+    SupportedCultures = [Lang.TurkishCulture, Lang.EnglishCulture],
+    SupportedUICultures = [Lang.TurkishCulture, Lang.EnglishCulture],
+    RequestCultureProviders = [new UserLanguageCultureProvider()],
+});
 app.UseAuthorization();
 app.UseOutputCache();
 
@@ -281,7 +287,23 @@ app.MapPost("/api/cron/sync", async (HttpContext ctx, SyncService sync, IConfigu
     .RequireRateLimiting("cron")
     .DisableAntiforgery();
 
+// Language switcher (footer). Works for anonymous visitors (cookie) and saves the choice on the account when signed in.
+// No antiforgery token: anonymous pages do not emit one (see output caching), and the auth cookie is SameSite=Lax,
+// so a cross-site POST cannot change a signed-in user's saved language.
+app.MapPost("/dil", async (HttpContext ctx, LanguageService languages) =>
+    {
+        var form = await ctx.Request.ReadFormAsync();
+        await languages.SetAsync(ctx, form["lang"]);
+        var returnUrl = form["returnUrl"].ToString();
+        return Results.LocalRedirect(IsLocal(returnUrl) ? returnUrl : "/");
+    })
+    .RequireRateLimiting("writes")
+    .DisableAntiforgery();
+
 app.MapRazorPages();
 
 await app.RunAsync();
 return 0;
+
+static bool IsLocal(string url) =>
+    url.StartsWith('/') && !url.StartsWith("//", StringComparison.Ordinal) && !url.StartsWith("/\\", StringComparison.Ordinal);

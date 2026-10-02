@@ -6,29 +6,29 @@
 <div id="pick-progress" hx-swap-oob="@(Model.Oob ? "true" : null)" class="flex flex-col gap-2">
     <div class="flex items-center justify-between gap-3 text-sm">
         <p class="font-semibold">
-            <span class="tabular-nums">@Model.Count/@Model.Total</span> takım seçildi
+            <span class="tabular-nums">@Model.Count/@Model.Total</span> @T("takım seçildi", "teams picked")
             @if (complete)
             {
-                <span class="ml-1 text-emerald-600 dark:text-emerald-400">· Tamamdır! @(Model.Locked ? "Sıralamadasın." : "İstersen kilitlenene kadar değiştirebilirsin.") 🎉</span>
+                <span class="ml-1 text-emerald-600 dark:text-emerald-400">· @T("Tamamdır!", "All set!") @(Model.Locked ? T("Sıralamadasın.", "You're ranked.") : T("İstersen kilitlenene kadar değiştirebilirsin.", "You can still change them until the lock.")) 🎉</span>
             }
             else if (!Model.Locked)
             {
-                <span class="ml-1 hidden muted sm:inline">· Sıralamaya girmek için hepsini seç</span>
+                <span class="ml-1 hidden muted sm:inline">· @T("Sıralamaya girmek için hepsini seç", "Pick them all to get ranked")</span>
             }
             else
             {
-                <span class="ml-1 text-amber-600 dark:text-amber-400">· Eksik tahminle sıralamaya giremezsin</span>
+                <span class="ml-1 text-amber-600 dark:text-amber-400">· @T("Eksik tahminle sıralamaya giremezsin", "You can't be ranked with missing picks")</span>
             }
         </p>
         @if (!Model.Locked)
         {
             <p class="flex shrink-0 items-center gap-1 text-xs muted" x-data="countdown('@Display.Iso(Model.LockAt)')">
                 @Icons.Svg("clock", "size-4")
-                <span class="tabular-nums"><span x-text="d">--</span>g <span x-text="h">--</span>s <span x-text="m">--</span>d</span>
+                <span class="tabular-nums"><span x-text="d">--</span>@T("g", "d") <span x-text="h">--</span>@T("s", "h") <span x-text="m">--</span>@T("d", "m")</span>
             </p>
         }
     </div>
-    <div class="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-ink-800" role="progressbar" aria-valuemin="0" aria-valuemax="@Model.Total" aria-valuenow="@Model.Count" aria-label="Tahmin ilerlemesi">
+    <div class="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-ink-800" role="progressbar" aria-valuemin="0" aria-valuemax="@Model.Total" aria-valuenow="@Model.Count" aria-label="@T("Tahmin ilerlemesi", "Pick progress")">
         <div class="h-full rounded-full transition-all duration-500 @(complete ? "bg-emerald-500" : "bg-brand-500")" style="width: @Display.Css(pct)%"></div>
     </div>
 </div>

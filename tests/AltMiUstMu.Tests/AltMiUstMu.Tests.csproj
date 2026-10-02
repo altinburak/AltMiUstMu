@@ -20,5 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\AltMiUstMu.Core\AltMiUstMu.Core.csproj" />
     <ProjectReference Include="..\..\src\AltMiUstMu.Infrastructure\AltMiUstMu.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\AltMiUstMu.Web\AltMiUstMu.Web.csproj" />
   </ItemGroup>
 </Project>

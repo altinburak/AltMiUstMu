@@ -1,4 +1,5 @@
 using AltMiUstMu.Infrastructure.Identity;
+using AltMiUstMu.Web.Localization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,7 +13,7 @@ public class CikisModel(SignInManager<AppUser> signIn) : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         await signIn.SignOutAsync();
-        TempData["Toast"] = "Çıkış yaptın. Görüşmek üzere!";
+        TempData["Toast"] = Lang.T("Çıkış yaptın. Görüşmek üzere!", "You signed out. See you soon!");
         return Redirect("/");
     }
 }

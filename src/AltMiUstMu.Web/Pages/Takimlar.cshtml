@@ -2,18 +2,19 @@
 @model TakimlarModel
 @using System.Globalization
 @{
-    ViewData["Title"] = "Takımlar";
-    ViewData["Description"] = "30 NBA takımının sezon galibiyet baremi, güncel derecesi, projeksiyonu ve topluluğun ALT/ÜST dağılımı.";
+    ViewData["Title"] = T("Takımlar", "Teams");
+    ViewData["Description"] = T("30 NBA takımının sezon galibiyet baremi, güncel derecesi, projeksiyonu ve topluluğun ALT/ÜST dağılımı.",
+                                "Season win totals, current records, projections and the community's UNDER/OVER split for all 30 NBA teams.");
     string Inv(decimal? v) => (v ?? 0).ToString(CultureInfo.InvariantCulture);
 }
 <div class="container-app py-6 sm:py-8">
     <p class="eyebrow">@Model.Season?.Label</p>
-    <h1 class="h1 mt-1">Takımlar</h1>
+    <h1 class="h1 mt-1">@T("Takımlar", "Teams")</h1>
     <p class="muted mt-1">
-        Barem, güncel derece, sezon sonu projeksiyonu ve topluluğun tercihi. Sütun başlıklarına dokunarak sırala.
+        @T("Barem, güncel derece, sezon sonu projeksiyonu ve topluluğun tercihi. Sütun başlıklarına dokunarak sırala.", "Line, current record, end-of-season projection and the community's choice. Tap a column header to sort.")
         @if (Model.LastUpdate is { } lu)
         {
-            <span>Son güncelleme: @Display.ShortDateTime(lu)</span>
+            <span>@T("Son güncelleme", "Last update"): @Display.ShortDateTime(lu)</span>
         }
     </p>
 
@@ -24,13 +25,13 @@
                     <tr>
                         @foreach (var (key, label, type, css) in new[]
                         {
-                            ("name", "Takım", "text", ""),
-                            ("conf", "Konf.", "text", "hidden sm:table-cell"),
-                            ("line", "Barem", "num", "text-right"),
-                            ("wins", "G-M", "num", "text-right"),
-                            ("proj", "Proj.", "num", "text-right"),
-                            ("diff", "Fark", "num", "text-right"),
-                            ("over", "% ÜST", "num", "text-right"),
+                            ("name", T("Takım", "Team"), "text", ""),
+                            ("conf", T("Konf.", "Conf."), "text", "hidden sm:table-cell"),
+                            ("line", T("Barem", "Line"), "num", "text-right"),
+                            ("wins", T("G-M", "W-L"), "num", "text-right"),
+                            ("proj", T("Proj.", "Proj."), "num", "text-right"),
+                            ("diff", T("Fark", "Diff"), "num", "text-right"),
+                            ("over", T("% ÜST", "% OVER"), "num", "text-right"),
                         })
                         {
                             <th scope="col" class="@css" x-bind:aria-sort="ariaSort('@key')">
@@ -53,7 +54,7 @@
                                     <span class="truncate">@t.FullName</span>
                                 </a>
                             </td>
-                            <td class="hidden sm:table-cell muted">@(t.Conference == Conference.East ? "Doğu" : "Batı")</td>
+                            <td class="hidden sm:table-cell muted">@(t.Conference == Conference.East ? T("Doğu", "East") : T("Batı", "West"))</td>
                             <td class="text-right font-bold tabular-nums">@Display.Line(t.Line)</td>
                             <td class="text-right tabular-nums">@t.Wins-@t.Losses</td>
                             <td class="text-right tabular-nums">@Display.Number(t.Projected)</td>
@@ -82,8 +83,15 @@
         </div>
         @if (Model.Teams.Count == 0)
         {
-            <p class="p-8 text-center muted">Henüz takım verisi yok.</p>
+            <p class="p-8 text-center muted">@T("Henüz takım verisi yok.", "No team data yet.")</p>
         }
     </div>
-    <p class="mt-3 text-xs muted"><span class="text-brand-500">Turuncu</span> fark ÜST yönünde, <span class="text-sky-500">mavi</span> fark ALT yönünde gidişi gösterir.</p>
+    @if (IsEnglish)
+    {
+        <p class="mt-3 text-xs muted">An <span class="text-brand-500">orange</span> diff means the team is trending OVER, a <span class="text-sky-500">blue</span> one trending UNDER.</p>
+    }
+    else
+    {
+        <p class="mt-3 text-xs muted"><span class="text-brand-500">Turuncu</span> fark ÜST yönünde, <span class="text-sky-500">mavi</span> fark ALT yönünde gidişi gösterir.</p>
+    }
 </div>

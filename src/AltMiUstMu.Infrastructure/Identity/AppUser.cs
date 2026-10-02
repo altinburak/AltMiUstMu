@@ -15,6 +15,9 @@ public class AppUser : IdentityUser
     public bool IsDisabled { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>UI language: "tr" (default) or "en".</summary>
+    public string Language { get; set; } = "tr";
 }
 
 public static class Roles

@@ -1,22 +1,22 @@
 @page "/hesap/eposta-onayla"
 @model AltMiUstMu.Web.Pages.Hesap.EpostaOnaylaModel
 @{
-    ViewData["Title"] = "E-posta doğrulama";
+    ViewData["Title"] = T("E-posta doğrulama", "Email verification");
     Layout = "_AuthLayout";
 }
 <div class="text-center">
     @if (Model.Success)
     {
         <div class="mx-auto grid size-14 place-items-center rounded-2xl bg-emerald-500/15 text-3xl" aria-hidden="true">✅</div>
-        <h1 class="h1 mt-4">E-postan doğrulandı!</h1>
-        <p class="muted mt-3">Hesabın hazır. Şimdi 30 takım için ALT ya da ÜST seçme zamanı.</p>
-        <a href="@Model.Next" class="btn btn-primary mt-6 w-full">@(Model.Next.StartsWith("/gruplar/katil/") ? "Gruba katıl" : "Tahminlerime git") @Icons.Svg("arrow-right", "size-4")</a>
+        <h1 class="h1 mt-4">@T("E-postan doğrulandı!", "Your email is verified!")</h1>
+        <p class="muted mt-3">@T("Hesabın hazır. Şimdi 30 takım için ALT ya da ÜST seçme zamanı.", "Your account is ready. Time to pick UNDER or OVER for all 30 teams.")</p>
+        <a href="@Model.Next" class="btn btn-primary mt-6 w-full">@(Model.Next.StartsWith("/gruplar/katil/") ? T("Gruba katıl", "Join the group") : T("Tahminlerime git", "Go to my picks")) @Icons.Svg("arrow-right", "size-4")</a>
     }
     else
     {
         <div class="mx-auto grid size-14 place-items-center rounded-2xl bg-red-500/15 text-3xl" aria-hidden="true">⚠️</div>
-        <h1 class="h1 mt-4">Bağlantı geçersiz</h1>
-        <p class="muted mt-3">Doğrulama bağlantısı hatalı ya da süresi dolmuş olabilir.</p>
-        <a href="/hesap/onay-gonder" class="btn btn-primary mt-6 w-full">Yeni bağlantı gönder</a>
+        <h1 class="h1 mt-4">@T("Bağlantı geçersiz", "Invalid link")</h1>
+        <p class="muted mt-3">@T("Doğrulama bağlantısı hatalı ya da süresi dolmuş olabilir.", "The verification link is wrong or may have expired.")</p>
+        <a href="/hesap/onay-gonder" class="btn btn-primary mt-6 w-full">@T("Yeni bağlantı gönder", "Send a new link")</a>
     }
 </div>

@@ -1,14 +1,14 @@
 @page "/hesap/sifre-sifirla"
 @model AltMiUstMu.Web.Pages.Hesap.SifreSifirlaModel
 @{
-    ViewData["Title"] = "Şifre sıfırla";
+    ViewData["Title"] = T("Şifre sıfırla", "Reset password");
     Layout = "_AuthLayout";
 }
-<h1 class="h1 text-center">Yeni şifre belirle</h1>
+<h1 class="h1 text-center">@T("Yeni şifre belirle", "Set a new password")</h1>
 @if (Model.Done)
 {
-    <div class="alert-success mt-6" role="status">Şifren güncellendi. Artık yeni şifrenle giriş yapabilirsin.</div>
-    <a href="/hesap/giris" class="btn btn-primary mt-4 w-full">Giriş yap</a>
+    <div class="alert-success mt-6" role="status">@T("Şifren güncellendi. Artık yeni şifrenle giriş yapabilirsin.", "Your password was updated. You can now sign in with your new password.")</div>
+    <a href="/hesap/giris" class="btn btn-primary mt-4 w-full">@T("Giriş yap", "Sign in")</a>
 }
 else
 {
@@ -30,6 +30,6 @@ else
             <input asp-for="Input.ConfirmPassword" class="input" autocomplete="new-password" required />
             <span asp-validation-for="Input.ConfirmPassword" class="field-error"></span>
         </div>
-        <button type="submit" class="btn btn-primary w-full">Şifremi güncelle</button>
+        <button type="submit" class="btn btn-primary w-full">@T("Şifremi güncelle", "Update my password")</button>
     </form>
 }
