@@ -210,6 +210,14 @@
     @apply border-sky-500 bg-sky-500 text-white shadow-md shadow-sky-500/30;
   }
 
+  .share-target {
+    @apply flex flex-col items-center gap-1.5 rounded-xl py-1 text-[11px] font-medium text-zinc-600 transition select-none hover:text-zinc-900 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-zinc-400 dark:hover:text-white;
+  }
+
+  .share-icon {
+    @apply grid size-12 place-items-center rounded-2xl text-white shadow-sm;
+  }
+
   .stat {
     @apply text-3xl font-extrabold tracking-tight tabular-nums;
   }

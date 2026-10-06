@@ -3,6 +3,8 @@ using AltMiUstMu.Core.Entities;
 using AltMiUstMu.Core.Scoring;
 using AltMiUstMu.Infrastructure.Services;
 using AltMiUstMu.Web.Helpers;
+using AltMiUstMu.Web.Identity;
+using AltMiUstMu.Web.Infrastructure;
 using AltMiUstMu.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -17,7 +19,7 @@ public sealed record PickProgressVm(int Count, int Total, bool Locked, DateTime 
 public sealed record PickCardResponseVm(PickCardVm Card, PickProgressVm Progress);
 
 [EnableRateLimiting("writes")]
-public class IndexModel(SeasonService seasons, GameQueries queries, PickService picks) : PageModel
+public class IndexModel(SeasonService seasons, GameQueries queries, PickService picks, AccountEmails links) : PageModel
 {
     public Season? Season { get; private set; }
     public bool Locked { get; private set; }
@@ -26,6 +28,8 @@ public class IndexModel(SeasonService seasons, GameQueries queries, PickService 
     public List<PunditView> Pundits { get; private set; } = [];
 
     public string PostUrl => Url.Page("/Tahminler/Index", "Pick")!;
+
+    public string ShareUrl => Url.Page("/Tahminler/Index", "Share")!;
 
     public async Task OnGetAsync(CancellationToken ct) => await LoadAsync(ct);
 
@@ -66,6 +70,59 @@ public class IndexModel(SeasonService seasons, GameQueries queries, PickService 
         }
 
         return Partial("_PickCardResponse", new PickCardResponseVm(Card(team), Progress(oob: true)));
+    }
+
+    /// <summary>
+    /// Everything the share sheet needs to draw the picks card (client-side canvas) and build the network links.
+    /// The site address is part of both the text and the image, so a shared post always leads back here.
+    /// </summary>
+    public async Task<IActionResult> OnGetShareAsync(CancellationToken ct)
+    {
+        await LoadAsync(ct);
+        if (Season is null)
+        {
+            return NotFound();
+        }
+
+        var over = MyPicks.Count(p => p.Value == PickSide.Over);
+        var under = MyPicks.Count - over;
+        var url = links.Absolute("/");
+        var conferences = Teams
+            .GroupBy(t => t.Conference)
+            .OrderBy(g => g.Key)
+            .Select(g => new
+            {
+                label = Display.ConferenceLabel(g.Key),
+                teams = g.OrderBy(t => t.Division).ThenBy(t => t.City).Select(t => new
+                {
+                    abbr = t.Abbreviation,
+                    primary = t.PrimaryColor,
+                    secondary = t.SecondaryColor,
+                    fg = Display.TextOn(t.PrimaryColor),
+                    line = Display.Line(t.Line),
+                    side = MyPicks.TryGetValue(t.Id, out var s) ? Display.SideLabel(s) : null,
+                    over = MyPicks.TryGetValue(t.Id, out var o) ? o == PickSide.Over : (bool?)null,
+                }),
+            });
+
+        return new JsonResult(new
+        {
+            url,
+            host = new Uri(url).Host,
+            text = Lang.T(
+                $"{Season.Label} NBA sezonu için galibiyet tahminlerimi yaptım: {over} ÜST, {under} ALT 🏀 Kaan ve İnan'ı geçebilecek misin? Sen de tahminini yap:",
+                $"I made my {Season.Label} NBA win-total picks: {over} OVER, {under} UNDER 🏀 Can you beat Kaan and İnan? Make your picks:"),
+            heading = Lang.T($"{Season.Label} sezonu tahminlerim", $"My {Season.Label} season picks"),
+            name = User.DisplayName(),
+            over,
+            under,
+            overLabel = Display.Over,
+            underLabel = Display.Under,
+            tagline = Lang.T("Kaan ve İnan'ı geçebilecek misin?", "Can you beat Kaan and İnan?"),
+            cta = Lang.T("Sen de tahminini yap 👉", "Make your picks 👉"),
+            fileName = Lang.T("altmiustmu-tahminlerim.png", "altmiustmu-my-picks.png"),
+            conferences,
+        });
     }
 
     public PickCardVm Card(TeamOverview team) =>

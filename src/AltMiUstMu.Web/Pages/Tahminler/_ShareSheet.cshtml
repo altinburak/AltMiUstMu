@@ -1,0 +1,60 @@
+@model string
+@{
+    // Link-based networks open their own composer; Instagram and TikTok only accept media, so they get the image.
+    var networks = new (string Key, string Label, string Css)[]
+    {
+        ("x", "X", "bg-black ring-1 ring-white/15"),
+        ("facebook", "Facebook", "bg-[#1877F2]"),
+        ("whatsapp", "WhatsApp", "bg-[#25D366]"),
+        ("telegram", "Telegram", "bg-[#26A5E4]"),
+        ("threads", "Threads", "bg-black ring-1 ring-white/15"),
+        ("bluesky", "Bluesky", "bg-[#1185FE]"),
+        ("reddit", "Reddit", "bg-[#FF4500]"),
+        ("linkedin", "LinkedIn", "bg-[#0A66C2]"),
+    };
+}
+<div x-data="shareSheet('@Model')" x-on:open-share.window="show()" x-on:keydown.escape.window="close()">
+    <div x-show="open" x-cloak x-transition.opacity class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" x-on:click="close()"></div>
+    <div x-show="open" x-cloak x-transition role="dialog" aria-modal="true" aria-labelledby="share-title"
+         class="fixed inset-x-0 bottom-0 z-50 max-h-[92dvh] overflow-y-auto rounded-t-3xl border border-zinc-200 bg-white p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl dark:border-ink-700 dark:bg-ink-900">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <h2 id="share-title" class="h2">@T("Tahminlerini paylaş 🏀", "Share your picks 🏀")</h2>
+                <p class="mt-1 text-sm muted">@T("Arkadaşlarını davet et, bakalım kim daha iyi tahmin ediyor.", "Challenge your friends and see who picks better.")</p>
+            </div>
+            <button type="button" x-ref="closeBtn" class="btn btn-ghost min-h-10! px-2.5!" x-on:click="close()" aria-label="@T("Kapat", "Close")">@Icons.Svg("x")</button>
+        </div>
+
+        <div class="relative mx-auto mt-4 aspect-[4/5] w-full max-w-[16rem] overflow-hidden rounded-2xl border border-zinc-200 dark:border-ink-700">
+            <div x-show="!imageUrl" class="skeleton absolute inset-0"></div>
+            <img x-show="imageUrl" x-bind:src="imageUrl" class="size-full object-cover" alt="@T("Tahmin kartın", "Your picks card")" />
+        </div>
+
+        <button type="button" x-show="canShareFile" x-cloak class="btn btn-primary mt-4 w-full" x-on:click="shareImage()" x-bind:disabled="!file">
+            @Icons.Svg("share", "size-4") @T("Görseli paylaş (Instagram, TikTok, WhatsApp…)", "Share image (Instagram, TikTok, WhatsApp…)")
+        </button>
+
+        <div class="mt-4 grid grid-cols-4 gap-x-2 gap-y-4 sm:grid-cols-6">
+            <button type="button" class="share-target" x-on:click="shareImage('Instagram')" x-bind:disabled="!file">
+                <span class="share-icon bg-gradient-to-tr from-[#feda75] via-[#d62976] to-[#4f5bd5]">@Icons.Brand("instagram")</span>Instagram
+            </button>
+            <button type="button" class="share-target" x-on:click="shareImage('TikTok')" x-bind:disabled="!file">
+                <span class="share-icon bg-black ring-1 ring-white/15">@Icons.Brand("tiktok")</span>TikTok
+            </button>
+            @foreach (var n in networks)
+            {
+                <a class="share-target" x-bind:href="link('@n.Key')" target="_blank" rel="noopener noreferrer">
+                    <span class="share-icon @n.Css">@Icons.Brand(n.Key)</span>@n.Label
+                </a>
+            }
+            <button type="button" class="share-target" x-on:click="download()" x-bind:disabled="!file">
+                <span class="share-icon bg-zinc-700 dark:bg-ink-700">@Icons.Svg("download")</span>@T("İndir", "Download")
+            </button>
+            <button type="button" class="share-target" x-on:click="copy()" x-bind:disabled="!data">
+                <span class="share-icon bg-zinc-700 dark:bg-ink-700">@Icons.Svg("copy")</span><span x-text="copied ? '@T("Kopyalandı", "Copied")' : '@T("Kopyala", "Copy")'">@T("Kopyala", "Copy")</span>
+            </button>
+        </div>
+
+        <p class="mt-4 text-xs muted">@T("Instagram ve TikTok bağlantı paylaşmaya izin vermiyor: görseli hikâyene ya da gönderine ekle. Site adresi görselin üzerinde yazıyor.", "Instagram and TikTok don't allow link sharing: add the image to your story or post. The site address is printed on it.")</p>
+    </div>
+</div>
