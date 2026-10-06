@@ -33,9 +33,14 @@ public static class LockKeys
 public interface ICacheInvalidator
 {
     Task InvalidateAsync(CancellationToken ct = default);
+
+    /// <summary>Evicts one player's cached public profile.</summary>
+    Task InvalidatePlayerAsync(string userId, CancellationToken ct = default);
 }
 
 public sealed class NoopCacheInvalidator : ICacheInvalidator
 {
     public Task InvalidateAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+    public Task InvalidatePlayerAsync(string userId, CancellationToken ct = default) => Task.CompletedTask;
 }

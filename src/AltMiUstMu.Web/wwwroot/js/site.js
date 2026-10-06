@@ -322,9 +322,17 @@
 
     // Share sheet: fetches the user's picks, draws the share image and builds per-network links.
     // The image is prepared before any button is pressed because file sharing must run inside the click.
-    Alpine.data('shareSheet', function (endpoint) {
+    Alpine.data('shareSheet', function (endpoint, sharedEndpoint) {
       return {
-        open: false, data: null, file: null, imageUrl: null, canShareFile: false, copied: false,
+        open: false, data: null, file: null, imageUrl: null, canShareFile: false, copied: false, marked: false,
+        // Any share action makes the picks public on the profile (server side), once per page view.
+        markShared: function () {
+          if (this.marked) { return; }
+          this.marked = true;
+          var headers = {};
+          try { headers = JSON.parse(document.body.getAttribute('hx-headers') || '{}'); } catch (e) { }
+          fetch(sharedEndpoint, { method: 'POST', headers: headers, credentials: 'same-origin' }).catch(function () { });
+        },
         show: function () {
           var self = this;
           self.open = true;
@@ -360,6 +368,7 @@
         // Native share sheet when the device supports files (mobile: Instagram, TikTok, Snapchat…); otherwise download.
         shareImage: function (network) {
           if (!this.file) { return; }
+          this.markShared();
           if (this.canShareFile) {
             navigator.share({ files: [this.file], text: this.message() }).catch(function () { });
             return;
@@ -371,6 +380,7 @@
         },
         download: function () {
           if (!this.imageUrl) { return; }
+          this.markShared();
           var a = document.createElement('a');
           a.href = this.imageUrl;
           a.download = this.data.fileName;
@@ -380,6 +390,7 @@
         },
         copy: function () {
           var self = this, text = self.message();
+          self.markShared();
           var done = function () {
             self.copied = true;
             toast(t('Metin ve bağlantı kopyalandı', 'Text and link copied'));

@@ -31,6 +31,8 @@ public class IndexModel(SeasonService seasons, GameQueries queries, PickService 
 
     public string ShareUrl => Url.Page("/Tahminler/Index", "Share")!;
 
+    public string SharedUrl => Url.Page("/Tahminler/Index", "Shared")!;
+
     public async Task OnGetAsync(CancellationToken ct) => await LoadAsync(ct);
 
     public async Task<IActionResult> OnPostPickAsync(int teamId, PickSide side, CancellationToken ct)
@@ -86,7 +88,8 @@ public class IndexModel(SeasonService seasons, GameQueries queries, PickService 
 
         var over = MyPicks.Count(p => p.Value == PickSide.Over);
         var under = MyPicks.Count - over;
-        var url = links.Absolute("/");
+        // The shared link opens the player's profile: their picks plus a sign-up prompt for visitors.
+        var url = links.Absolute("/oyuncu/" + Uri.EscapeDataString(User.DisplayName()));
         var conferences = Teams
             .GroupBy(t => t.Conference)
             .OrderBy(g => g.Key)
@@ -124,6 +127,10 @@ public class IndexModel(SeasonService seasons, GameQueries queries, PickService 
             conferences,
         });
     }
+
+    /// <summary>The user pressed a share button: their picks become public on their profile.</summary>
+    public async Task<IActionResult> OnPostSharedAsync(CancellationToken ct) =>
+        await picks.MarkPicksSharedAsync(User.UserId()!, ct) ? new NoContentResult() : BadRequest();
 
     public PickCardVm Card(TeamOverview team) =>
         new(team, MyPicks.TryGetValue(team.Id, out var side) ? side : null, Locked, Pundits, PostUrl);

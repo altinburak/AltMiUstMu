@@ -42,7 +42,7 @@ Diğer özellikler:
 - Türkçe (varsayılan) ve İngilizce arayüz, e-postalar ve hata mesajları. Dil kayıtta seçilir, hesap ayarlarından ya da üst menüdeki TR/EN düğmesinden değiştirilir; yönetim paneli yalnızca Türkçe. Saatler İstanbul saatiyle gösterilir, veritabanında UTC tutulur.
 - Mobil öncelikli tasarım: koyu tema varsayılan, açık tema seçeneği var.
 - WhatsApp ve Twitter paylaşımları için Open Graph etiketleri.
-- Tahmin paylaşımı: 30 tahmin tamamlanınca paylaşım penceresi açılır (sonra ilerleme çubuğundaki **Paylaş** butonuyla). Tahminlerden, üzerinde site adresi yazan bir görsel üretilir (tarayıcıda, 1080×1350). X, Facebook, WhatsApp, Telegram, Threads, Bluesky, Reddit ve LinkedIn için hazır metin ve bağlantı; Instagram ve TikTok için telefonda yerel paylaşım menüsü, masaüstünde görsel indirme. Adres `APP_URL`'den gelir.
+- Tahmin paylaşımı: 30 tahmin tamamlanınca paylaşım penceresi açılır (sonra ilerleme çubuğundaki **Paylaş** butonuyla). Tahminlerden, üzerinde site adresi yazan bir görsel üretilir (tarayıcıda, 1080×1350). X, Facebook, WhatsApp, Telegram, Threads, Bluesky, Reddit ve LinkedIn için hazır metin ve bağlantı; Instagram ve TikTok için telefonda yerel paylaşım menüsü, masaüstünde görsel indirme. Paylaşılan bağlantı oyuncunun profiline gider; paylaşan oyuncunun tahminleri kilitten önce de herkese açık olur (paylaşılmayan tahminler kilide kadar gizli). Adres `APP_URL`'den gelir.
 - Takım logoları kullanılmaz (marka hakları). Takımlar, takım renklerinde kısaltma rozetleriyle gösterilir.
 
 ## Teknoloji

@@ -27,6 +27,17 @@
         </div>
     </div>
 
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="card card-pad mt-6 flex flex-col gap-3 border-brand-500/40 sm:flex-row sm:items-center">
+            <div class="min-w-0 flex-1">
+                <p class="font-bold">@T($"{Model.DisplayName} ile yarışmaya var mısın? 🏀", $"Think you can beat {Model.DisplayName}? 🏀")</p>
+                <p class="text-sm muted">@T("30 NBA takımı için ALT mı ÜST mü, tahminini yap. Ücretsiz, bahis yok.", "Pick UNDER or OVER for all 30 NBA teams. Free, no betting.")</p>
+            </div>
+            <a href="/hesap/kayit" class="btn btn-primary">@T("Ücretsiz kayıt ol", "Sign up free") @Icons.Svg("arrow-right", "size-4")</a>
+        </div>
+    }
+
     <div class="mt-6 grid grid-cols-3 gap-3">
         <div class="card card-pad">
             <p class="text-xs font-semibold uppercase muted">@T("Sıra", "Rank")</p>

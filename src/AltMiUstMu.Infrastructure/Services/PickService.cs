@@ -35,7 +35,7 @@ public class PickService(AppDbContext db, TimeProvider time, AuditService audit,
             return PickResult.Locked;
         }
 
-        var user = await db.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.IsPundit, u.IsDisabled }).SingleOrDefaultAsync(ct);
+        var user = await db.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.IsPundit, u.IsDisabled, u.PicksSharedSeasonId }).SingleOrDefaultAsync(ct);
         if (user is null || user.IsPundit || user.IsDisabled)
         {
             return PickResult.NotAllowed;
@@ -46,7 +46,36 @@ public class PickService(AppDbContext db, TimeProvider time, AuditService audit,
             return PickResult.InvalidTeam;
         }
 
-        return await UpsertAsync(userId, season.Id, teamId, side, now, ct);
+        var result = await UpsertAsync(userId, season.Id, teamId, side, now, ct);
+        if (result == PickResult.Saved && user.PicksSharedSeasonId == season.Id)
+        {
+            await cache.InvalidatePlayerAsync(userId, ct);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Called when the user shares their picks: from then on the current season's picks are public on their
+    /// profile, even before the lock. Returns false when there is no season or the account can't pick.
+    /// </summary>
+    public async Task<bool> MarkPicksSharedAsync(string userId, CancellationToken ct = default)
+    {
+        var season = await db.Seasons.AsNoTracking().OrderByDescending(s => s.Id).FirstOrDefaultAsync(ct);
+        var user = await db.Users.SingleOrDefaultAsync(u => u.Id == userId, ct);
+        if (season is null || user is null || user.IsPundit || user.IsDisabled)
+        {
+            return false;
+        }
+
+        if (user.PicksSharedSeasonId != season.Id)
+        {
+            user.PicksSharedSeasonId = season.Id;
+            await db.SaveChangesAsync(ct);
+            await cache.InvalidatePlayerAsync(userId, ct);
+        }
+
+        return true;
     }
 
     /// <summary>

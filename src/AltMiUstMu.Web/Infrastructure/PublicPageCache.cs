@@ -13,6 +13,9 @@ public static class PublicPageCache
     public const string PolicyName = "public";
     public const string Tag = "public-pages";
 
+    /// <summary>Extra tag on a player's profile, so their picks can be evicted without dropping every page.</summary>
+    public static string PlayerTag(string userId) => "player-" + userId;
+
     /// <summary>
     /// Output cache for anonymous visitors of public pages. Entries are evicted in-process after a sync and are
     /// also keyed by a "data version" (last successful sync / admin change), so a sync run by the separate cron
@@ -47,6 +50,9 @@ public sealed class OutputCacheInvalidator(IOutputCacheStore store, DataVersionP
         version.Reset();
         await store.EvictByTagAsync(PublicPageCache.Tag, ct);
     }
+
+    public async Task InvalidatePlayerAsync(string userId, CancellationToken ct = default) =>
+        await store.EvictByTagAsync(PublicPageCache.PlayerTag(userId), ct);
 }
 
 public sealed class DataVersionProvider(IServiceScopeFactory scopes, IMemoryCache cache)

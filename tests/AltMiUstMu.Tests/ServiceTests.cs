@@ -39,9 +39,17 @@ internal sealed class CountingInvalidator : ICacheInvalidator
 {
     public int Calls { get; private set; }
 
+    public List<string> Players { get; } = [];
+
     public Task InvalidateAsync(CancellationToken ct = default)
     {
         Calls++;
+        return Task.CompletedTask;
+    }
+
+    public Task InvalidatePlayerAsync(string userId, CancellationToken ct = default)
+    {
+        Players.Add(userId);
         return Task.CompletedTask;
     }
 }
@@ -114,6 +122,36 @@ public class PickLockTests
         (await service.SetPickAsync(user.Id, 1, PickSide.Under)).Should().Be(PickResult.Saved);
 
         w.Db.Picks.Should().ContainSingle(p => p.UserId == user.Id && p.TeamId == 1 && p.Side == PickSide.Under);
+    }
+
+    [Fact]
+    public async Task Sharing_makes_picks_public_and_later_changes_refresh_the_profile()
+    {
+        using var w = new TestWorld();
+        var user = w.AddUser("zeynep");
+        var other = w.AddUser("can");
+        var service = w.Picks();
+
+        await service.SetPickAsync(user.Id, 1, PickSide.Over);
+        w.Cache.Players.Should().BeEmpty("unshared picks are private, nothing public to refresh");
+
+        (await service.MarkPicksSharedAsync(user.Id)).Should().BeTrue();
+        w.Db.Users.Single(u => u.Id == user.Id).PicksSharedSeasonId.Should().Be(w.Season.Id);
+        w.Cache.Players.Should().Equal(user.Id);
+
+        await service.SetPickAsync(user.Id, 1, PickSide.Under);
+        await service.SetPickAsync(other.Id, 1, PickSide.Under);
+        w.Cache.Players.Should().Equal(user.Id, user.Id);
+    }
+
+    [Fact]
+    public async Task Pundits_cannot_be_marked_as_shared()
+    {
+        using var w = new TestWorld();
+        var pundit = w.AddUser("kaan", pundit: true);
+
+        (await w.Picks().MarkPicksSharedAsync(pundit.Id)).Should().BeFalse();
+        (await w.Picks().MarkPicksSharedAsync("missing")).Should().BeFalse();
     }
 
     [Fact]

@@ -44,6 +44,14 @@ public class PickRulesTests
     }
 
     [Fact]
+    public void Shared_picks_are_visible_to_everyone_before_lock()
+    {
+        var before = LockAt.AddHours(-1);
+        PickRules.CanViewPicks(Upcoming(), before, "owner", ownerIsPundit: false, viewerId: null, ownerShared: true).Should().BeTrue();
+        PickRules.CanViewPicks(Upcoming(), before, "owner", ownerIsPundit: false, viewerId: "someone", ownerShared: true).Should().BeTrue();
+    }
+
+    [Fact]
     public void Expected_status_moves_forward_with_clock_and_records()
     {
         PickRules.ExpectedStatus(Upcoming(), LockAt.AddMinutes(-1), false).Should().Be(SeasonStatus.Upcoming);

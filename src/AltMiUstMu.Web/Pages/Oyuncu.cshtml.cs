@@ -26,6 +26,7 @@ public class OyuncuModel(SeasonService seasons, GameQueries queries, AppDbContex
     public int RankedCount { get; private set; }
     public int PickCount { get; private set; }
     public bool PicksVisible { get; private set; }
+    public bool Shared { get; private set; }
     public bool Locked { get; private set; }
     public List<TeamPickRow> Rows { get; private set; } = [];
     public ChartData? Chart { get; private set; }
@@ -35,11 +36,14 @@ public class OyuncuModel(SeasonService seasons, GameQueries queries, AppDbContex
         var season = await seasons.GetCurrentAsync(ct);
         var key = TextNormalizer.Fold(name);
         var user = await db.Users.AsNoTracking().Where(u => u.DisplayNameKey == key && !u.IsDisabled)
-            .Select(u => new { u.Id, u.DisplayName, u.IsPundit, u.CreatedAt }).SingleOrDefaultAsync(ct);
+            .Select(u => new { u.Id, u.DisplayName, u.IsPundit, u.CreatedAt, u.PicksSharedSeasonId }).SingleOrDefaultAsync(ct);
         if (season is null || user is null)
         {
             return NotFound();
         }
+
+        // Shared picks change until the lock; tag the cached page so a pick change can evict just this profile.
+        HttpContext.Features.Get<IOutputCacheFeature>()?.Context.Tags.Add(PublicPageCache.PlayerTag(user.Id));
 
         Season = season;
         DisplayName = user.DisplayName;
@@ -49,7 +53,8 @@ public class OyuncuModel(SeasonService seasons, GameQueries queries, AppDbContex
         Locked = seasons.IsLocked(season);
         Score = await queries.GetScoreAsync(season.Id, user.Id, ct);
         RankedCount = await queries.RankedCountAsync(season.Id, ct);
-        PicksVisible = PickRules.CanViewPicks(season, seasons.UtcNow, user.Id, user.IsPundit, User.UserId(), User.IsInRole("Admin"));
+        Shared = user.PicksSharedSeasonId == season.Id;
+        PicksVisible = PickRules.CanViewPicks(season, seasons.UtcNow, user.Id, user.IsPundit, User.UserId(), User.IsInRole("Admin"), Shared);
 
         var picks = await queries.GetPicksAsync(season.Id, user.Id, ct);
         PickCount = picks.Count;

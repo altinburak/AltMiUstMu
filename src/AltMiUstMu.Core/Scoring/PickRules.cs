@@ -14,8 +14,9 @@ public static class PickRules
         season.Status != SeasonStatus.Upcoming || utcNow >= season.LockAt;
 
     /// <summary>Whether <paramref name="viewerId"/> may see the picks of <paramref name="ownerId"/>.</summary>
-    public static bool CanViewPicks(Season season, DateTime utcNow, string ownerId, bool ownerIsPundit, string? viewerId, bool viewerIsAdmin = false) =>
+    public static bool CanViewPicks(Season season, DateTime utcNow, string ownerId, bool ownerIsPundit, string? viewerId, bool viewerIsAdmin = false, bool ownerShared = false) =>
         ownerIsPundit
+        || ownerShared
         || viewerIsAdmin
         || IsLocked(season, utcNow)
         || (viewerId is not null && viewerId == ownerId);
